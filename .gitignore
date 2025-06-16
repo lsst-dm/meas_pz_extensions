@@ -7,6 +7,7 @@ config.log
 *.cfgc
 *.pyc
 *_wrap.cc
+*dist-info
 *Lib.py
 
 # Built by sconsUtils
