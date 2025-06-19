@@ -51,6 +51,12 @@ class EstimatePZTPZAlgoConfig(EstimatePZAlgoConfigBase):
     def estimator_class(cls) -> type[CatEstimator]:
         return TPZliteEstimator
 
+    def get_mag_err_dict(self):
+        """Return the dict mapping the name of magnitude columns to error columns"""
+        ret_dict = {key: val for key, val in zip(self.get_mag_name_list(), self.get_mag_err_name_list())}
+        ret_dict.update(redshift=None)
+        return ret_dict
+
 
 EstimatePZTPZAlgoConfig._make_fields()
 
@@ -79,6 +85,9 @@ class EstimatePZTPZConfig(EstimatePZTaskConfig):
         self.pz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
         self.pz_algo.mag_limits = self.pz_algo.get_mag_lim_dict()
         self.pz_algo.band_a_env = self.pz_algo.get_band_a_env_dict()
+        self.pz_algo.err_dict = self.pz_algo.get_mag_err_dict()
+        self.pz_algo.id_col = "objectId"
+        self.pz_algo.calc_summary_stats = True
 
 
 class EstimatePZTPZTask(EstimatePZTask):

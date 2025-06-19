@@ -81,6 +81,8 @@ class EstimatePZFZBoostConfig(EstimatePZTaskConfig):
         self.pz_algo.err_bands = self.pz_algo.get_mag_err_name_list()
         self.pz_algo.mag_limits = self.pz_algo.get_mag_lim_dict()
         self.pz_algo.band_a_env = self.pz_algo.get_band_a_env_dict()
+        self.pz_algo.id_col = "objectId"
+        self.pz_algo.calc_summary_stats = True
 
 
 class EstimatePZFZBoostTask(EstimatePZTask):
