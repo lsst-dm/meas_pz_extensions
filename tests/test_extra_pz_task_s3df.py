@@ -72,7 +72,7 @@ try:
 except ImportError:
     EstimatePZTPZTask = None
 
-from lsst.meas.pz.tests.utils import run_pz_task_s3df
+from lsst.meas.pz.extensions.tests.utils import run_pz_task_s3df
 
 TEST_DIR = os.path.abspath(os.path.dirname(__file__))
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")

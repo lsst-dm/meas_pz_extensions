@@ -71,7 +71,7 @@ class MeasPzExtraPipelineTestCase(unittest.TestCase):
             os.path.join(TEST_DATA_DIR, "pz_pipeline_all_lsst.yaml"),
             ["#all_pz"],
             [
-                ("objectTable", {"skymap", "tract", "patch"}, "ArrowAstropy", False),
+                ("object", {"skymap", "tract"}, "ArrowAstropy", False),
                 ("pzModel_bpz", {"instrument"}, "PZModel", True),
                 ("pzModel_dnf", {"instrument"}, "PZModel", True),
                 ("pzModel_fzboost", {"instrument"}, "PZModel", True),
@@ -81,7 +81,7 @@ class MeasPzExtraPipelineTestCase(unittest.TestCase):
                 ("pzModel_cmnn", {"instrument"}, "PZModel", True),
             ],
             expected_inputs={
-                "objectTable",
+                "object",
                 "pzModel_bpz",
                 "pzModel_dnf",
                 "pzModel_fzboost",
