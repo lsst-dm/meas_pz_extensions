@@ -186,9 +186,9 @@ class MeasPzTasksTestCase(unittest.TestCase):
                 "-o",
                 f"u/{USER}/pz_rail_testing",
                 "-p",
-                os.path.join(TEST_DATA_DIR, "extra", "pz_pipeline_all_lsst.yaml"),
+                os.path.join(TEST_DATA_DIR, "extras", "pz_pipeline_all_lsst.yaml"),
                 "-d",
-                "skymap='discrete/ci_hsc' AND tract=0 AND patch=69",
+                "\"skymap='discrete/ci_hsc' AND tract=0 AND patch=69\"",
             ]
         )
 

@@ -60,7 +60,7 @@ try:
 except ImportError:
     EstimatePZTPZTask = None
 
-from lsst.meas.pz.tests import utils
+from lsst.meas.pz.extensions.tests import utils
 
 
 @pytest.mark.parametrize(
