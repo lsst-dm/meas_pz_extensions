@@ -1,4 +1,4 @@
-# This file is part of meas_pz.
+# This file is part of meas_photoz_extensions.
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project
@@ -20,25 +20,25 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 __all__ = [
-    "EstimatePZDNFAlgoConfig",
-    "EstimatePZDNFAlgoTask",
-    "EstimatePZDNFTask",
-    "EstimatePZDNFConfig",
+    "EstimatePhotozDNFAlgoConfig",
+    "EstimatePhotozDNFAlgoTask",
+    "EstimatePhotozDNFConfig",
+    "EstimatePhotozDNFTask",
 ]
 
 from rail.estimation.algos.dnf import DNFEstimator
 from rail.estimation.estimator import CatEstimator
 
-from .estimate_pz_task import (
-    EstimatePZAlgoConfigBase,
-    EstimatePZAlgoTask,
-    EstimatePZTask,
-    EstimatePZTaskConfig,
+from lsst.meas.photoz.base import (
+    EstimatePhotozAlgoConfigBase,
+    EstimatePhotozAlgoTask,
+    EstimatePhotozTask,
+    EstimatePhotozTaskConfig,
 )
 
 
-class EstimatePZDNFAlgoConfig(EstimatePZAlgoConfigBase):
-    """Config for EstimatePZDNFAlgoTask
+class EstimatePhotozDNFAlgoConfig(EstimatePhotozAlgoConfigBase):
+    """Config for EstimatePhotozDNFAlgoTask
 
     This will select and configure the DNFEstimator p(z)
     estimation algorithm
@@ -50,40 +50,40 @@ class EstimatePZDNFAlgoConfig(EstimatePZAlgoConfigBase):
         return DNFEstimator
 
 
-EstimatePZDNFAlgoConfig._make_fields()
+EstimatePhotozDNFAlgoConfig._make_fields()
 
 
-class EstimatePZDNFAlgoTask(EstimatePZAlgoTask):
+class EstimatePhotozDNFAlgoTask(EstimatePhotozAlgoTask):
     """SubTask that runs RAIL DNF algorithm for p(z) estimation
 
-    See https://github.com/LSSTDESC/rail_dnf/blob/main/src/rail/estimation/algos/dnf.py  # noqa
+    See https://github.com/LSSTDESC/rail_dnf/blob/main/src/rail/estimation/algos/dnf.py
     for algorithm implementation.
 
     """
 
-    ConfigClass = EstimatePZDNFAlgoConfig
+    ConfigClass = EstimatePhotozDNFAlgoConfig
     _DefaultName = "estimatePZDNFAlgo"
 
 
-class EstimatePZDNFConfig(EstimatePZTaskConfig):
-    """Config for EstimatePZDNFTask
+class EstimatePhotozDNFConfig(EstimatePhotozTaskConfig):
+    """Config for EstimatePhotozDNFTask
 
     Overrides setDefaults to use DNF algorithm
     """
 
     def setDefaults(self) -> None:
-        self.pz_algo.retarget(EstimatePZDNFAlgoTask)
-        self.pz_algo.stage_name = "dnf"
-        self.pz_algo.output_mode = "return"
-        self.pz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
-        self.pz_algo.bands = self.pz_algo.get_mag_name_list()
-        self.pz_algo.err_bands = self.pz_algo.get_mag_err_name_list()
-        self.pz_algo.mag_limits = self.pz_algo.get_mag_lim_dict()
-        self.pz_algo.band_a_env = self.pz_algo.get_band_a_env_dict()
+        self.photoz_algo.retarget(EstimatePhotozDNFAlgoTask)
+        self.photoz_algo.stage_name = "dnf"
+        self.photoz_algo.output_mode = "return"
+        self.photoz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
+        self.photoz_algo.bands = self.photoz_algo.get_mag_name_list()
+        self.photoz_algo.err_bands = self.photoz_algo.get_mag_err_name_list()
+        self.photoz_algo.mag_limits = self.photoz_algo.get_mag_lim_dict()
+        self.photoz_algo.band_a_env = self.photoz_algo.get_band_a_env_dict()
 
 
-class EstimatePZDNFTask(EstimatePZTask):
+class EstimatePhotozDNFTask(EstimatePhotozTask):
     """Task that runs RAIL DNF algorithm for p(z) estimation"""
 
-    ConfigClass = EstimatePZDNFConfig
+    ConfigClass = EstimatePhotozDNFConfig
     _DefaultName = "estimatePZDNF"

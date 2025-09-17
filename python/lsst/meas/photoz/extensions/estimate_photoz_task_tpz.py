@@ -1,4 +1,4 @@
-# This file is part of meas_pz.
+# This file is part of meas_photoz_extensions.
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project
@@ -20,30 +20,30 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 __all__ = [
-    "EstimatePZTPZAlgoConfig",
-    "EstimatePZTPZAlgoTask",
-    "EstimatePZTPZTask",
-    "EstimatePZTPZConfig",
+    "EstimatePhotozTPZAlgoConfig",
+    "EstimatePhotozTPZAlgoTask",
+    "EstimatePhotozTPZConfig",
+    "EstimatePhotozTPZTask",
 ]
 
 from rail.estimation.algos.tpz_lite import TPZliteEstimator
 from rail.estimation.estimator import CatEstimator
 
-from .estimate_pz_task import (
-    EstimatePZAlgoConfigBase,
-    EstimatePZAlgoTask,
-    EstimatePZTask,
-    EstimatePZTaskConfig,
+from lsst.meas.photoz.base import (
+    EstimatePhotozAlgoConfigBase,
+    EstimatePhotozAlgoTask,
+    EstimatePhotozTask,
+    EstimatePhotozTaskConfig,
 )
 
 
-class EstimatePZTPZAlgoConfig(EstimatePZAlgoConfigBase):
-    """Config for EstimatePZTPZAlgoTask
+class EstimatePhotozTPZAlgoConfig(EstimatePhotozAlgoConfigBase):
+    """Config for EstimatePhotozTPZAlgoTask
 
     This will select and configure the TPZliteEstimator p(z)
     estimation algorithm
 
-    See https://github.com/LSSTDESC/rail_tpz/blob/src/rail/estimation/algos/tpz_lite.py  # noqa
+    See https://github.com/LSSTDESC/rail_tpz/blob/src/rail/estimation/algos/tpz_lite.py
     for parameters and default values.
     """
 
@@ -52,37 +52,37 @@ class EstimatePZTPZAlgoConfig(EstimatePZAlgoConfigBase):
         return TPZliteEstimator
 
 
-EstimatePZTPZAlgoConfig._make_fields()
+EstimatePhotozTPZAlgoConfig._make_fields()
 
 
-class EstimatePZTPZAlgoTask(EstimatePZAlgoTask):
+class EstimatePhotozTPZAlgoTask(EstimatePhotozAlgoTask):
     """SubTask that runs RAIL TPZ algorithm for p(z) estimation
 
-    See https://github.com/LSSTDESC/rail_tpz/blob/src/rail/estimation/algos/tpz_lite.py  # noqa
+    See https://github.com/LSSTDESC/rail_tpz/blob/src/rail/estimation/algos/tpz_lite.py
     for parameters and default values.
     """
 
-    ConfigClass = EstimatePZTPZAlgoConfig
+    ConfigClass = EstimatePhotozTPZAlgoConfig
     _DefaultName = "estimatePZTPZAlgo"
 
 
-class EstimatePZTPZConfig(EstimatePZTaskConfig):
-    """Config for EstimatePZTPZTask
+class EstimatePhotozTPZConfig(EstimatePhotozTaskConfig):
+    """Config for EstimatePhotozTPZTask
 
     Overrides setDefaults to use TPZ algorithm
     """
 
     def setDefaults(self) -> None:
-        self.pz_algo.retarget(EstimatePZTPZAlgoTask)
-        self.pz_algo.stage_name = "tpz"
-        self.pz_algo.output_mode = "return"
-        self.pz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
-        self.pz_algo.mag_limits = self.pz_algo.get_mag_lim_dict()
-        self.pz_algo.band_a_env = self.pz_algo.get_band_a_env_dict()
+        self.photoz_algo.retarget(EstimatePhotozTPZAlgoTask)
+        self.photoz_algo.stage_name = "tpz"
+        self.photoz_algo.output_mode = "return"
+        self.photoz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
+        self.photoz_algo.mag_limits = self.photoz_algo.get_mag_lim_dict()
+        self.photoz_algo.band_a_env = self.photoz_algo.get_band_a_env_dict()
 
 
-class EstimatePZTPZTask(EstimatePZTask):
+class EstimatePhotozTPZTask(EstimatePhotozTask):
     """Task that runs RAIL TPZ algorithm for p(z) estimation"""
 
-    ConfigClass = EstimatePZTPZConfig
+    ConfigClass = EstimatePhotozTPZConfig
     _DefaultName = "estimatePZTPZ"

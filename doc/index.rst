@@ -1,5 +1,5 @@
 ########################################
-meas_pz_extensions documentation preview
+meas_photoz_extension documentation preview
 ########################################
 
 .. This page is for local development only. It isn't published to pipelines.lsst.io.
@@ -9,4 +9,4 @@ meas_pz_extensions documentation preview
 .. toctree::
    :maxdepth: 1
 
-   lsst.meas.pz.extensions/index
+   lsst.meas.photoz.extensions/index

@@ -1,4 +1,4 @@
-# This file is part of meas_pz
+# This file is part of meas_photoz_extensions
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project
@@ -38,9 +38,9 @@ class MeasPzExtraPipelineTestCase(unittest.TestCase):
     """Test the PZ pipeline plumbing for partially supported algorithms.
 
     This uses the `PipelineStepTester` to test
-    a test pipeline define in tests/data/pz_pipeline_all_lsst.yaml
+    a test pipeline define in tests/data/photoz_all_lsst.yaml
 
-    This should include any algorithms that are wrapped in meas_pz.
+    This should include any algorithms that are wrapped in meas_photoz.
 
     For now that is cmnn, gpz, dnf, fzboost, gpz, tpz, and lephare
     """
@@ -68,36 +68,36 @@ class MeasPzExtraPipelineTestCase(unittest.TestCase):
         butler = self.makeButler(writeable=True)
 
         tester = PipelineStepTester(
-            os.path.join(TEST_DATA_DIR, "pz_pipeline_all_lsst.yaml"),
-            ["#all_pz"],
+            os.path.join(TEST_DATA_DIR, "photoz_all_lsst.yaml"),
+            ["#photoz_all"],
             [
                 ("object", {"skymap", "tract"}, "ArrowAstropy", False),
-                ("pzModel_bpz", {"instrument"}, "PZModel", True),
-                ("pzModel_dnf", {"instrument"}, "PZModel", True),
-                ("pzModel_fzboost", {"instrument"}, "PZModel", True),
-                ("pzModel_gpz", {"instrument"}, "PZModel", True),
-                ("pzModel_tpz", {"instrument"}, "PZModel", True),
-                ("pzModel_lephare", {"instrument"}, "PZModel", True),
-                ("pzModel_cmnn", {"instrument"}, "PZModel", True),
+                ("photozModel_bpz", {"instrument"}, "PhotozModel", True),
+                ("photozModel_dnf", {"instrument"}, "PhotozModel", True),
+                ("photozModel_fzboost", {"instrument"}, "PhotozModel", True),
+                ("photozModel_gpz", {"instrument"}, "PhotozModel", True),
+                ("photozModel_tpz", {"instrument"}, "PhotozModel", True),
+                ("photozModel_lephare", {"instrument"}, "PhotozModel", True),
+                ("photozModel_cmnn", {"instrument"}, "PhotozModel", True),
             ],
             expected_inputs={
                 "object",
-                "pzModel_bpz",
-                "pzModel_dnf",
-                "pzModel_fzboost",
-                "pzModel_gpz",
-                "pzModel_tpz",
-                "pzModel_lephare",
-                "pzModel_cmnn",
+                "photozModel_bpz",
+                "photozModel_dnf",
+                "photozModel_fzboost",
+                "photozModel_gpz",
+                "photozModel_tpz",
+                "photozModel_lephare",
+                "photozModel_cmnn",
             },
             expected_outputs={
-                "pz_estimate_bpz",
-                "pz_estimate_dnf",
-                "pz_estimate_fzboost",
-                "pz_estimate_gpz",
-                "pz_estimate_tpz",
-                "pz_estimate_lephare",
-                "pz_estimate_cmnn",
+                "photoz_estimate_bpz",
+                "photoz_estimate_dnf",
+                "photoz_estimate_fzboost",
+                "photoz_estimate_gpz",
+                "photoz_estimate_tpz",
+                "photoz_estimate_lephare",
+                "photoz_estimate_cmnn",
             },
         )
         tester.run(butler, self)

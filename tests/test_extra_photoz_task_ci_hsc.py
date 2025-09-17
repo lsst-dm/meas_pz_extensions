@@ -1,4 +1,4 @@
-# This file is part of meas_pz
+# This file is part of meas_photoz_extensions
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project
@@ -25,6 +25,7 @@ import unittest
 from typing import Any
 
 import qp
+
 from lsst.daf.butler import (
     Butler,
     DataCoordinate,
@@ -49,7 +50,7 @@ class MeasPzTasksTestCase(unittest.TestCase):
 
     This will run the pipeline tasks against CI_HSC_GEN3
 
-    This should include any algorithms that are wrapped in meas_pz.
+    This should include any algorithms that are wrapped in meas_photoz.
 
     For now that is knn and trainz.
     """
@@ -67,68 +68,68 @@ class MeasPzTasksTestCase(unittest.TestCase):
         storageClass="ArrowAstropy",
     )
 
-    pzModel_dimension_group = DimensionGroup(
+    photozModel_dimension_group = DimensionGroup(
         dim_universe,
         ["instrument"],
     )
 
-    pzModel_bpz_datasetType = DatasetType(
-        "pzModel_bpz",
-        dimensions=pzModel_dimension_group,
-        storageClass="PZModel",
+    photozModel_bpz_datasetType = DatasetType(
+        "photozModel_bpz",
+        dimensions=photozModel_dimension_group,
+        storageClass="PhotozModel",
         isCalibration=True,
     )
 
-    pzModel_cmnn_datasetType = DatasetType(
-        "pzModel_cmnn",
-        dimensions=pzModel_dimension_group,
-        storageClass="PZModel",
+    photozModel_cmnn_datasetType = DatasetType(
+        "photozModel_cmnn",
+        dimensions=photozModel_dimension_group,
+        storageClass="PhotozModel",
         isCalibration=True,
     )
 
-    pzModel_dnf_datasetType = DatasetType(
-        "pzModel_dnf",
-        dimensions=pzModel_dimension_group,
-        storageClass="PZModel",
+    photozModel_dnf_datasetType = DatasetType(
+        "photozModel_dnf",
+        dimensions=photozModel_dimension_group,
+        storageClass="PhotozModel",
         isCalibration=True,
     )
 
-    pzModel_fzboost_datasetType = DatasetType(
-        "pzModel_fzboost",
-        dimensions=pzModel_dimension_group,
-        storageClass="PZModel",
+    photozModel_fzboost_datasetType = DatasetType(
+        "photozModel_fzboost",
+        dimensions=photozModel_dimension_group,
+        storageClass="PhotozModel",
         isCalibration=True,
     )
 
-    pzModel_gpz_datasetType = DatasetType(
-        "pzModel_gpz",
-        dimensions=pzModel_dimension_group,
-        storageClass="PZModel",
+    photozModel_gpz_datasetType = DatasetType(
+        "photozModel_gpz",
+        dimensions=photozModel_dimension_group,
+        storageClass="PhotozModel",
         isCalibration=True,
     )
 
-    pzModel_lephare_datasetType = DatasetType(
-        "pzModel_lephare",
-        dimensions=pzModel_dimension_group,
-        storageClass="PZModel",
+    photozModel_lephare_datasetType = DatasetType(
+        "photozModel_lephare",
+        dimensions=photozModel_dimension_group,
+        storageClass="PhotozModel",
         isCalibration=True,
     )
 
-    pzModel_tpz_datasetType = DatasetType(
-        "pzModel_tpz",
-        dimensions=pzModel_dimension_group,
-        storageClass="PZModel",
+    photozModel_tpz_datasetType = DatasetType(
+        "photozModel_tpz",
+        dimensions=photozModel_dimension_group,
+        storageClass="PhotozModel",
         isCalibration=True,
     )
 
     dataset_types = [
-        pzModel_bpz_datasetType,
-        # pzModel_cmnn_datasetType,
-        pzModel_dnf_datasetType,
-        pzModel_fzboost_datasetType,
-        pzModel_gpz_datasetType,
-        # pzModel_lephare_datasetType,
-        pzModel_tpz_datasetType,
+        photozModel_bpz_datasetType,
+        # photozModel_cmnn_datasetType,
+        photozModel_dnf_datasetType,
+        photozModel_fzboost_datasetType,
+        photozModel_gpz_datasetType,
+        # photozModel_lephare_datasetType,
+        photozModel_tpz_datasetType,
     ]
 
     model_files = [
@@ -167,7 +168,7 @@ class MeasPzTasksTestCase(unittest.TestCase):
             dataset_ref = DatasetRef(
                 dataset_type,
                 DataCoordinate.from_full_values(
-                    self.pzModel_dimension_group,
+                    self.photozModel_dimension_group,
                     ("HSC",),
                 ),
                 run=f"u/{USER}/pz_models",
@@ -186,7 +187,7 @@ class MeasPzTasksTestCase(unittest.TestCase):
                 "-o",
                 f"u/{USER}/pz_rail_testing",
                 "-p",
-                os.path.join(TEST_DATA_DIR, "extras", "pz_pipeline_all_lsst.yaml"),
+                os.path.join(TEST_DATA_DIR, "extras", "photoz_all_lsst.yaml"),
                 "-d",
                 "\"skymap='discrete/ci_hsc' AND tract=0 AND patch=69\"",
             ]

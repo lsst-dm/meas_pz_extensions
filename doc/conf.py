@@ -7,8 +7,7 @@ https://developer.lsst.io/stack/building-single-package-docs.html
 
 from documenteer.conf.pipelinespkg import *
 
-
-project = "meas_pz_extensions"
+project = "meas_photoz_extension"
 html_theme_options["logotext"] = project
 html_title = project
 html_short_title = project

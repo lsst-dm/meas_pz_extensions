@@ -1,4 +1,4 @@
-# This file is part of meas_pz.
+# This file is part of meas_photoz_extensions.
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project
@@ -20,25 +20,25 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 __all__ = [
-    "EstimatePZLephareAlgoConfig",
-    "EstimatePZLephareAlgoTask",
-    "EstimatePZLephareTask",
-    "EstimatePZLephareConfig",
+    "EstimatePhotozLephareAlgoConfig",
+    "EstimatePhotozLephareAlgoTask",
+    "EstimatePhotozLephareConfig",
+    "EstimatePhotozLephareTask",
 ]
 
 from rail.estimation.algos.lephare import LephareEstimator
 from rail.estimation.estimator import CatEstimator
 
-from .estimate_pz_task import (
-    EstimatePZAlgoConfigBase,
-    EstimatePZAlgoTask,
-    EstimatePZTask,
-    EstimatePZTaskConfig,
+from lsst.meas.photoz.base import (
+    EstimatePhotozAlgoConfigBase,
+    EstimatePhotozAlgoTask,
+    EstimatePhotozTask,
+    EstimatePhotozTaskConfig,
 )
 
 
-class EstimatePZLephareAlgoConfig(EstimatePZAlgoConfigBase):
-    """Config for EstimatePZLephareAlgoTask
+class EstimatePhotozLephareAlgoConfig(EstimatePhotozAlgoConfigBase):
+    """Config for EstimatePhotozLephareAlgoTask
 
     This will select and configure the LephareEstimator p(z)
     estimation algorithm
@@ -50,13 +50,13 @@ class EstimatePZLephareAlgoConfig(EstimatePZAlgoConfigBase):
         return LephareEstimator
 
 
-EstimatePZLephareAlgoConfig._make_fields()
+EstimatePhotozLephareAlgoConfig._make_fields()
 
 
-class EstimatePZLephareAlgoTask(EstimatePZAlgoTask):
+class EstimatePhotozLephareAlgoTask(EstimatePhotozAlgoTask):
     """SubTask that runs RAIL Lephare algorithm for p(z) estimation
 
-    See https://github.com/LSSTDESC/rail_lephare/blob/src/rail/estimation/algos/lephare.py  # noqa
+    See https://github.com/LSSTDESC/rail_lephare/blob/src/rail/estimation/algos/lephare.py
     for algorithm implementation.
 
     Lephare estimates the p(z) distribution by taking
@@ -64,29 +64,29 @@ class EstimatePZLephareAlgoTask(EstimatePZAlgoTask):
     color space.
     """
 
-    ConfigClass = EstimatePZLephareAlgoConfig
+    ConfigClass = EstimatePhotozLephareAlgoConfig
     _DefaultName = "estimatePZLephareAlgo"
 
 
-class EstimatePZLephareConfig(EstimatePZTaskConfig):
-    """Config for EstimatePZLephareTask
+class EstimatePhotozLephareConfig(EstimatePhotozTaskConfig):
+    """Config for EstimatePhotozLephareTask
 
     Overrides setDefaults to use Lephare algorithm
     """
 
     def setDefaults(self) -> None:
-        self.pz_algo.retarget(EstimatePZLephareAlgoTask)
-        self.pz_algo.stage_name = "lephare"
-        self.pz_algo.output_mode = "return"
-        self.pz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
-        self.pz_algo.bands = self.pz_algo.get_mag_name_list()
-        self.pz_algo.err_bands = self.pz_algo.get_mag_err_name_list()
-        self.pz_algo.mag_limits = self.pz_algo.get_mag_lim_dict()
-        self.pz_algo.band_a_env = self.pz_algo.get_band_a_env_dict()
+        self.photoz_algo.retarget(EstimatePhotozLephareAlgoTask)
+        self.photoz_algo.stage_name = "lephare"
+        self.photoz_algo.output_mode = "return"
+        self.photoz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
+        self.photoz_algo.bands = self.photoz_algo.get_mag_name_list()
+        self.photoz_algo.err_bands = self.photoz_algo.get_mag_err_name_list()
+        self.photoz_algo.mag_limits = self.photoz_algo.get_mag_lim_dict()
+        self.photoz_algo.band_a_env = self.photoz_algo.get_band_a_env_dict()
 
 
-class EstimatePZLephareTask(EstimatePZTask):
+class EstimatePhotozLephareTask(EstimatePhotozTask):
     """Task that runs RAIL Lephare algorithm for p(z) estimation"""
 
-    ConfigClass = EstimatePZLephareConfig
+    ConfigClass = EstimatePhotozLephareConfig
     _DefaultName = "estimatePZLephare"
