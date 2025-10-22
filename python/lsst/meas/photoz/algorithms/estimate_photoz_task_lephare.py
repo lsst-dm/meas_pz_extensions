@@ -1,4 +1,4 @@
-# This file is part of meas_photoz_extensions.
+# This file is part of meas_photoz_algorithms.
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project

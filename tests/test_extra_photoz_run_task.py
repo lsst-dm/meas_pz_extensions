@@ -1,4 +1,4 @@
-# This file is part of meas_photoz_extensions
+# This file is part of meas_photoz_algorithms
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project
@@ -31,36 +31,36 @@ except ImportError:
     EstimatePhotozBPZTask = None
 
 try:
-    from lsst.meas.photoz.extensions.estimate_photoz_task_cmnn import EstimatePhotozCMNNTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_cmnn import EstimatePhotozCMNNTask
 except ImportError:
     EstimatePhotozCMNNTask = None
 
 try:
-    from lsst.meas.photoz.extensions.estimate_photoz_task_dnf import EstimatePhotozDNFTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_dnf import EstimatePhotozDNFTask
 except ImportError:
     EstimatePhotozDNFTask = None
 
 try:
-    from lsst.meas.photoz.extensions.estimate_photoz_task_fzboost import EstimatePhotozFZBoostTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_fzboost import EstimatePhotozFZBoostTask
 except ImportError:
     EstimatePhotozFZBoostTask = None
 
 try:
-    from lsst.meas.photoz.extensions.estimate_photoz_task_gpz import EstimatePhotozGPZTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_gpz import EstimatePhotozGPZTask
 except ImportError:
     EstimatePhotozGPZTask = None
 
 try:
-    from lsst.meas.photoz.extensions.estimate_photoz_task_lephare import EstimatePhotozLephareTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_lephare import EstimatePhotozLephareTask
 except ImportError:
     EstimatePhotozLephareTask = None
 
 try:
-    from lsst.meas.photoz.extensions.estimate_photoz_task_tpz import EstimatePhotozTPZTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_tpz import EstimatePhotozTPZTask
 except ImportError:
     EstimatePhotozTPZTask = None
 
-from lsst.meas.photoz.extensions.tests import utils
+from lsst.meas.photoz.algorithms.tests import utils
 
 
 @pytest.mark.parametrize(

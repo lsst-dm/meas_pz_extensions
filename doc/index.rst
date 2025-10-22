@@ -9,4 +9,4 @@ meas_photoz_extension documentation preview
 .. toctree::
    :maxdepth: 1
 
-   lsst.meas.photoz.extensions/index
+   lsst.meas.photoz.algorithms/index

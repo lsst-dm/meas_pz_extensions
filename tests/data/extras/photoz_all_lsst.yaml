@@ -7,32 +7,32 @@ tasks:
       connections.photozModel: 'photozModel_bpz'
       connections.photozEnsemble: 'photoz_estimate_bpz'
   photoz_dnf:
-    class: lsst.meas.photoz.extensions.estimate_photoz_task_dnf.EstimatePhotozDNFTask
+    class: lsst.meas.photoz.algorithms.estimate_photoz_task_dnf.EstimatePhotozDNFTask
     config:
       connections.photozModel: 'photozModel_dnf'
       connections.photozEnsemble: 'photoz_estimate_dnf'
   photoz_fzboost:
-    class: lsst.meas.photoz.extensions.estimate_photoz_task_fzboost.EstimatePhotozFZBoostTask
+    class: lsst.meas.photoz.algorithms.estimate_photoz_task_fzboost.EstimatePhotozFZBoostTask
     config:
       connections.photozModel: 'photozModel_fzboost'
       connections.photozEnsemble: 'photoz_estimate_fzboost'
   photoz_gpz:
-    class: lsst.meas.photoz.extensions.estimate_photoz_task_gpz.EstimatePhotozGPZTask
+    class: lsst.meas.photoz.algorithms.estimate_photoz_task_gpz.EstimatePhotozGPZTask
     config:
       connections.photozModel: 'photozModel_gpz'
       connections.photozEnsemble: 'photoz_estimate_gpz'
   photoz_tpz:
-    class: lsst.meas.photoz.extensions.estimate_photoz_task_tpz.EstimatePhotozTPZTask
+    class: lsst.meas.photoz.algorithms.estimate_photoz_task_tpz.EstimatePhotozTPZTask
     config:
       connections.photozModel: 'photozModel_tpz'
       connections.photozEnsemble: 'photoz_estimate_tpz'
   photoz_lephare:
-    class: lsst.meas.photoz.extensions.estimate_photoz_task_lephare.EstimatePhotozLephareTask
+    class: lsst.meas.photoz.algorithms.estimate_photoz_task_lephare.EstimatePhotozLephareTask
     config:
       connections.photozModel: 'photozModel_lephare'
       connections.photozEnsemble: 'photoz_estimate_lephare'      
   photoz_cmnn:
-    class: lsst.meas.photoz.extensions.estimate_photoz_task_cmnn.EstimatePhotozCMNNTask
+    class: lsst.meas.photoz.algorithms.estimate_photoz_task_cmnn.EstimatePhotozCMNNTask
     config:
       connections.photozModel: 'photozModel_cmnn'
       connections.photozEnsemble: 'photoz_estimate_cmnn'

@@ -1,4 +1,4 @@
-# This file is part of meas_photoz_extensions.
+# This file is part of meas_photoz_algorithms.
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project
@@ -20,13 +20,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 __all__ = [
-    "EstimatePhotozFZBoostAlgoConfig",
-    "EstimatePhotozFZBoostAlgoTask",
-    "EstimatePhotozFZBoostConfig",
-    "EstimatePhotozFZBoostTask",
+    "EstimatePhotozGPZAlgoConfig",
+    "EstimatePhotozGPZAlgoTask",
+    "EstimatePhotozGPZConfig",
+    "EstimatePhotozGPZTask",
 ]
 
-from rail.estimation.algos.flexzboost import FlexZBoostEstimator
+from rail.estimation.algos.gpz import GPzEstimator
 from rail.estimation.estimator import CatEstimator
 
 from lsst.meas.photoz.base import (
@@ -37,43 +37,43 @@ from lsst.meas.photoz.base import (
 )
 
 
-class EstimatePhotozFZBoostAlgoConfig(EstimatePhotozAlgoConfigBase):
-    """Config for EstimatePhotozFZBoostAlgoTask
+class EstimatePhotozGPZAlgoConfig(EstimatePhotozAlgoConfigBase):
+    """Config for EstimatePhotozGPZAlgoTask
 
-    This will select and configure the FlexZBoostEstimator p(z)
+    This will select and configure the GPzEstimator p(z)
     estimation algorithm
 
     """
 
     @classmethod
     def estimator_class(cls) -> type[CatEstimator]:
-        return FlexZBoostEstimator
+        return GPzEstimator
 
 
-EstimatePhotozFZBoostAlgoConfig._make_fields()
+EstimatePhotozGPZAlgoConfig._make_fields()
 
 
-class EstimatePhotozFZBoostAlgoTask(EstimatePhotozAlgoTask):
-    """SubTask that runs RAIL FZBoost algorithm for p(z) estimation
+class EstimatePhotozGPZAlgoTask(EstimatePhotozAlgoTask):
+    """SubTask that runs RAIL GPZ algorithm for p(z) estimation
 
-    See https://github.com/LSSTDESC/rail_flexzboost/blob/main/src/rail/estimation/algos/flexzboost.py
+    See https://github.com/LSSTDESC/rail_gpz_v1/blob/src/rail/estimation/algos/gpz.py
     for algorithm implementation.
 
     """
 
-    ConfigClass = EstimatePhotozFZBoostAlgoConfig
-    _DefaultName = "estimatePZFZBoostAlgo"
+    ConfigClass = EstimatePhotozGPZAlgoConfig
+    _DefaultName = "estimatePZGPZAlgo"
 
 
-class EstimatePhotozFZBoostConfig(EstimatePhotozTaskConfig):
-    """Config for EstimatePhotozFZBoostTask
+class EstimatePhotozGPZConfig(EstimatePhotozTaskConfig):
+    """Config for EstimatePhotozGPZTask
 
-    Overrides setDefaults to use FZBoost algorithm
+    Overrides setDefaults to use GPZ algorithm
     """
 
     def setDefaults(self) -> None:
-        self.photoz_algo.retarget(EstimatePhotozFZBoostAlgoTask)
-        self.photoz_algo.stage_name = "fzboost"
+        self.photoz_algo.retarget(EstimatePhotozGPZAlgoTask)
+        self.photoz_algo.stage_name = "gpz"
         self.photoz_algo.output_mode = "return"
         self.photoz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
         self.photoz_algo.ref_band = self.photoz_algo.mag_template.format(band='i')
@@ -81,10 +81,11 @@ class EstimatePhotozFZBoostConfig(EstimatePhotozTaskConfig):
         self.photoz_algo.err_bands = self.photoz_algo.get_mag_err_name_list()
         self.photoz_algo.mag_limits = self.photoz_algo.get_mag_lim_dict()
         self.photoz_algo.band_a_env = self.photoz_algo.get_band_a_env_dict()
+        self.photoz_algo.replace_error_vals = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
 
 
-class EstimatePhotozFZBoostTask(EstimatePhotozTask):
-    """Task that runs RAIL FZBoost algorithm for p(z) estimation"""
+class EstimatePhotozGPZTask(EstimatePhotozTask):
+    """Task that runs RAIL GPZ algorithm for p(z) estimation"""
 
-    ConfigClass = EstimatePhotozFZBoostConfig
-    _DefaultName = "estimatePZFZBoost"
+    ConfigClass = EstimatePhotozGPZConfig
+    _DefaultName = "estimatePZGPZ"
