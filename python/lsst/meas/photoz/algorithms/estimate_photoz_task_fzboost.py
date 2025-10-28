@@ -29,11 +29,13 @@ __all__ = [
 from rail.estimation.algos.flexzboost import FlexZBoostEstimator
 from rail.estimation.estimator import CatEstimator
 
+import lsst.pex.config as pexConfig
 from lsst.meas.photoz.base import (
     EstimatePhotozAlgoConfigBase,
     EstimatePhotozAlgoTask,
     EstimatePhotozTask,
     EstimatePhotozTaskConfig,
+    photozAlgoRegistry,
 )
 
 
@@ -49,10 +51,15 @@ class EstimatePhotozFZBoostAlgoConfig(EstimatePhotozAlgoConfigBase):
     def estimator_class(cls) -> type[CatEstimator]:
         return FlexZBoostEstimator
 
+    @classmethod
+    def stage_name(cls):
+        return "fzboost"
+
 
 EstimatePhotozFZBoostAlgoConfig._make_fields()
 
 
+@pexConfig.registerConfigurable(EstimatePhotozFZBoostAlgoConfig.stage_name(), photozAlgoRegistry)
 class EstimatePhotozFZBoostAlgoTask(EstimatePhotozAlgoTask):
     """SubTask that runs RAIL FZBoost algorithm for p(z) estimation
 
@@ -72,15 +79,10 @@ class EstimatePhotozFZBoostConfig(EstimatePhotozTaskConfig):
     """
 
     def setDefaults(self) -> None:
-        self.photoz_algo.retarget(EstimatePhotozFZBoostAlgoTask)
-        self.photoz_algo.stage_name = "fzboost"
-        self.photoz_algo.output_mode = "return"
-        self.photoz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
-        self.photoz_algo.ref_band = self.photoz_algo.mag_template.format(band='i')
-        self.photoz_algo.bands = self.photoz_algo.get_mag_name_list()
-        self.photoz_algo.err_bands = self.photoz_algo.get_mag_err_name_list()
-        self.photoz_algo.mag_limits = self.photoz_algo.get_mag_lim_dict()
-        self.photoz_algo.band_a_env = self.photoz_algo.get_band_a_env_dict()
+        super().setDefaults()
+        name = EstimatePhotozFZBoostAlgoConfig.stage_name()
+        self.connections.algo = name
+        self.photoz_algo = name
 
 
 class EstimatePhotozFZBoostTask(EstimatePhotozTask):

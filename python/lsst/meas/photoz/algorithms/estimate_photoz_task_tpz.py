@@ -29,17 +29,18 @@ __all__ = [
 from rail.estimation.algos.tpz_lite import TPZliteEstimator
 from rail.estimation.estimator import CatEstimator
 
+import lsst.pex.config as pexConfig
 from lsst.meas.photoz.base import (
     EstimatePhotozAlgoConfigBase,
     EstimatePhotozAlgoTask,
     EstimatePhotozTask,
     EstimatePhotozTaskConfig,
+    photozAlgoRegistry,
 )
 
 
 class EstimatePhotozTPZAlgoConfig(EstimatePhotozAlgoConfigBase):
     """Config for EstimatePhotozTPZAlgoTask
-
     This will select and configure the TPZliteEstimator p(z)
     estimation algorithm
 
@@ -51,10 +52,21 @@ class EstimatePhotozTPZAlgoConfig(EstimatePhotozAlgoConfigBase):
     def estimator_class(cls) -> type[CatEstimator]:
         return TPZliteEstimator
 
+    @classmethod
+    def stage_name(cls):
+        return "tpz"
+
+    def _finalize(self):
+        super()._finalize()
+        mag_names = self.get_mag_names()
+        mag_err_names = self.get_mag_err_names()
+        self.err_dict = {mag_names[band]: mag_err_names[band] for band in self.bands_to_convert}
+
 
 EstimatePhotozTPZAlgoConfig._make_fields()
 
 
+@pexConfig.registerConfigurable(EstimatePhotozTPZAlgoConfig.stage_name(), photozAlgoRegistry)
 class EstimatePhotozTPZAlgoTask(EstimatePhotozAlgoTask):
     """SubTask that runs RAIL TPZ algorithm for p(z) estimation
 
@@ -73,12 +85,10 @@ class EstimatePhotozTPZConfig(EstimatePhotozTaskConfig):
     """
 
     def setDefaults(self) -> None:
-        self.photoz_algo.retarget(EstimatePhotozTPZAlgoTask)
-        self.photoz_algo.stage_name = "tpz"
-        self.photoz_algo.output_mode = "return"
-        self.photoz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
-        self.photoz_algo.mag_limits = self.photoz_algo.get_mag_lim_dict()
-        self.photoz_algo.band_a_env = self.photoz_algo.get_band_a_env_dict()
+        super().setDefaults()
+        name = EstimatePhotozTPZAlgoConfig.stage_name()
+        self.connections.algo = name
+        self.photoz_algo = name
 
 
 class EstimatePhotozTPZTask(EstimatePhotozTask):

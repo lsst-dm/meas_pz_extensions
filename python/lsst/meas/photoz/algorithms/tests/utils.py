@@ -26,25 +26,26 @@ def _set_config(config: EstimatePhotozTaskConfig, config_dict: dict[str, Any]) -
 
 def hsc_config_callback(config: EstimatePhotozTaskConfig) -> None:
     """Set up config for HSC column names"""
-    _set_config(config.photoz_algo, HscCatalogConfig.build_base_dict())
-    config.photoz_algo.bands_to_convert = ["g", "r", "i", "z", "y"]
-    # We should be using these for constencty
+    config_algo = config.photoz_algo.active
+    _set_config(config_algo, HscCatalogConfig.build_base_dict())
+    config_algo.bands = ["g", "r", "i", "z", "y"]
+    # We should be using these for consistency
     # but there are some infinites, so for now we use gaap1p0
-    # config.photoz_algo.flux_column_template = "{band}_cModelFlux"
-    # config.photoz_algo.flux_err_column_template = "{band}_cModelFluxErr"
-    config.photoz_algo.flux_column_template = "{band}_gaap1p0Flux"
-    config.photoz_algo.flux_err_column_template = "{band}_gaap1p0FluxErr"
-    config.photoz_algo.mag_template = "HSC{band}_cmodel_dered"
-    config.photoz_algo.mag_err_template = "{band}_cmodel_magerr"
-    config.photoz_algo.deredden = False
+    # config_algo.flux_column_template = "{band}_cModelFlux"
+    # config_algo.flux_err_column_template = "{band}_cModelFluxErr"
+    config_algo.flux_column_template = "{band}_gaap1p0Flux"
+    config_algo.flux_err_column_template = "{band}_gaap1p0FluxErr"
+    config_algo.mag_template = "HSC{band}_cmodel_dered"
+    config_algo.mag_err_template = "{band}_cmodel_magerr"
+    config_algo.deredden = False
     _set_config(
-        config.photoz_algo,
+        config_algo,
         dict(
             ref_band="HSCi_cmodel_dered",
-            bands=config.photoz_algo.get_mag_name_list(),
-            err_bands=config.photoz_algo.get_mag_err_name_list(),
-            mag_limits=config.photoz_algo.get_mag_lim_dict(),
-            band_a_env=config.photoz_algo.get_band_a_env_dict(),
+            bands=list(config_algo.get_mag_names().values()),
+            err_bands=list(config_algo.get_mag_err_names().values()),
+            mag_limits=config_algo.get_mag_lim_dict(),
+            band_a_env=config_algo.get_band_a_env_dict(),
             filter_list=[
                 "DC2LSST_g",
                 "DC2LSST_r",
@@ -52,47 +53,49 @@ def hsc_config_callback(config: EstimatePhotozTaskConfig) -> None:
                 "DC2LSST_z",
                 "DC2LSST_y",
             ],
-        )
+        ),
     )
 
 
 def dc2_config_callback(config: EstimatePhotozTaskConfig) -> None:
     """Set up config for DC2 column names"""
-    _set_config(config.photoz_algo, Dc2CatalogConfig.build_base_dict())
-    config.photoz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
-    config.photoz_algo.flux_column_template = "{band}_cModelFlux"
-    config.photoz_algo.flux_err_column_template = "{band}_cModelFluxErr"
-    config.photoz_algo.mag_template = "mag_{band}_cModel_obj_dered"
-    config.photoz_algo.mag_err_template = "magerr_{band}_cModel_obj"
+    config_algo = config.photoz_algo.active
+    _set_config(config_algo, Dc2CatalogConfig.build_base_dict())
+    config_algo.bands = ["u", "g", "r", "i", "z", "y"]
+    config_algo.flux_column_template = "{band}_cModelFlux"
+    config_algo.flux_err_column_template = "{band}_cModelFluxErr"
+    config_algo.mag_template = "mag_{band}_cModel_obj_dered"
+    config_algo.mag_err_template = "magerr_{band}_cModel_obj"
     _set_config(
-        config.photoz_algo,
+        config_algo,
         dict(
             ref_band="mag_i_cModel_obj_dered",
-            bands=config.photoz_algo.get_mag_name_list(),
-            err_bands=config.photoz_algo.get_mag_err_name_list(),
-            mag_limits=config.photoz_algo.get_mag_lim_dict(),
-            band_a_env=config.photoz_algo.get_band_a_env_dict(),
-        )
+            bands=list(config_algo.get_mag_names().values()),
+            err_bands=list(config_algo.get_mag_err_names().values()),
+            mag_limits=config_algo.get_mag_lim_dict(),
+            band_a_env=config_algo.get_band_a_env_dict(),
+        ),
     )
 
 
 def com_cam_config_callback(config: EstimatePhotozTaskConfig) -> None:
     """Set up config for com cam column names"""
-    _set_config(config.photoz_algo, ComCamCatalogConfig.build_base_dict())
-    config.photoz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
-    config.photoz_algo.flux_column_template = "{band}_cModelFlux"
-    config.photoz_algo.flux_err_column_template = "{band}_cModelFluxErr"
-    config.photoz_algo.mag_template = "{band}_cModelMag"
-    config.photoz_algo.mag_err_template = "{band}_cModelMagErr"
+    config_algo = config.photoz_algo.active
+    _set_config(config_algo, ComCamCatalogConfig.build_base_dict())
+    config_algo.bands = ["u", "g", "r", "i", "z", "y"]
+    config_algo.flux_column_template = "{band}_cModelFlux"
+    config_algo.flux_err_column_template = "{band}_cModelFluxErr"
+    config_algo.mag_template = "{band}_cModelMag"
+    config_algo.mag_err_template = "{band}_cModelMagErr"
     _set_config(
-        config.photoz_algo,
+        config_algo,
         dict(
             ref_band="i_cModelMag",
-            bands=config.photoz_algo.get_mag_name_list(),
-            err_bands=config.photoz_algo.get_mag_err_name_list(),
-            mag_limits=config.photoz_algo.get_mag_lim_dict(),
-            band_a_env=config.photoz_algo.get_band_a_env_dict(),
-        )
+            bands=list(config_algo.get_mag_names().values()),
+            err_bands=list(config_algo.get_mag_err_names().values()),
+            mag_limits=config_algo.get_mag_lim_dict(),
+            band_a_env=config_algo.get_band_a_env_dict(),
+        ),
     )
 
 
@@ -138,7 +141,7 @@ def do_pz_task(
     to_delete = []
     output = task.run(photoz_model, data)
     output_path = f"output_{algo_name}.hdf5"
-    output.photozEnsemble.write_to(output_path)
+    output.photoz_ensemble.write_to(output_path)
     to_delete.append(output_path)
     test_out = qp.read(output_path)
     assert isinstance(test_out, qp.Ensemble)
@@ -168,12 +171,12 @@ def run_pz_task_s3df(
     task = estimator_class(True, config=task_config)
     dd = butler.getDeferred(
         "objectTable",
-        skymap="DC2",
-        tract=3829,
-        patch=1,
+        skymap="lsst_cells_v1",
+        tract=5063,
+        patch=34,
     ).get(parameters=dict(columns=task.photoz_algo.col_names()))
     output = task.run(photoz_model, dd)
-    output.photozEnsemble.write_to(f"output_{algo_name}.hdf5")
+    output.photoz_ensemble.write_to(f"output_{algo_name}.hdf5")
     to_delete.append(f"output_{algo_name}.hdf5")
     test_out = qp.read(f"output_{algo_name}.hdf5")
     assert isinstance(test_out, qp.Ensemble)

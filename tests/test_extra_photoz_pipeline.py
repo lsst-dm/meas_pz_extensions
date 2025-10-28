@@ -29,6 +29,10 @@ from lsst.daf.butler.tests import DatastoreMock
 from lsst.daf.butler.tests.utils import makeTestTempDir, removeTestTempDir
 from lsst.pipe.base.tests.pipelineStepTester import PipelineStepTester
 
+import lsst.meas.photoz.base.all_algos as all_algos_base
+import lsst.meas.photoz.algorithms.all_algos as all_algos
+from lsst.meas.photoz.base.estimate_photoz_task import EstimatePhotozConnections, photozAlgoRegistry
+
 PIPELINES_DIR = os.path.join(os.path.dirname(__file__), "..", "pipelines")
 TEST_DIR = os.path.abspath(os.path.dirname(__file__))
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data", "extras")
@@ -37,12 +41,10 @@ TEST_DATA_DIR = os.path.join(TEST_DIR, "data", "extras")
 class MeasPzExtraPipelineTestCase(unittest.TestCase):
     """Test the PZ pipeline plumbing for partially supported algorithms.
 
-    This uses the `PipelineStepTester` to test
-    a test pipeline define in tests/data/photoz_all_lsst.yaml
+    This uses the `PipelineStepTester` to test pipelines/photoz.yaml.
 
-    This should include any algorithms that are wrapped in meas_photoz.
-
-    For now that is cmnn, gpz, dnf, fzboost, gpz, tpz, and lephare
+    This should include any algorithms that are wrapped in this package
+    or in meas_photoz_base.
     """
 
     def setUp(self) -> None:
@@ -67,37 +69,26 @@ class MeasPzExtraPipelineTestCase(unittest.TestCase):
     def test_extra_pz_pipeline(self) -> None:
         butler = self.makeButler(writeable=True)
 
+        expected_inputs = ["object"]
+        expected_outputs = []
+        inputs = [("object", {"skymap", "tract"}, "ArrowAstropy", False)]
+        names = list(photozAlgoRegistry.keys())
+        tasks = list(photozAlgoRegistry.values())
+        assert set(all_algos.__all__).issuperset(set(all_algos_base.__all__))
+        assert len(names) == len(all_algos.__all__)
+        assert set(tasks) == set([getattr(all_algos, attr) for attr in all_algos.__all__])
+
+        for algo in names:
+            dataset = EstimatePhotozConnections.photoz_model.name.format(algo=algo)
+            expected_inputs.append(dataset)
+            expected_outputs.append(EstimatePhotozConnections.photoz_ensemble.name.format(algo=algo))
+            inputs.append((dataset, {"instrument"}, "PhotozModel", True))
+
         tester = PipelineStepTester(
-            os.path.join(TEST_DATA_DIR, "photoz_all_lsst.yaml"),
+            os.path.join(PIPELINES_DIR, "photoz.yaml"),
             ["#photoz_all"],
-            [
-                ("object", {"skymap", "tract"}, "ArrowAstropy", False),
-                ("photozModel_bpz", {"instrument"}, "PhotozModel", True),
-                ("photozModel_dnf", {"instrument"}, "PhotozModel", True),
-                ("photozModel_fzboost", {"instrument"}, "PhotozModel", True),
-                ("photozModel_gpz", {"instrument"}, "PhotozModel", True),
-                ("photozModel_tpz", {"instrument"}, "PhotozModel", True),
-                ("photozModel_lephare", {"instrument"}, "PhotozModel", True),
-                ("photozModel_cmnn", {"instrument"}, "PhotozModel", True),
-            ],
-            expected_inputs={
-                "object",
-                "photozModel_bpz",
-                "photozModel_dnf",
-                "photozModel_fzboost",
-                "photozModel_gpz",
-                "photozModel_tpz",
-                "photozModel_lephare",
-                "photozModel_cmnn",
-            },
-            expected_outputs={
-                "photoz_estimate_bpz",
-                "photoz_estimate_dnf",
-                "photoz_estimate_fzboost",
-                "photoz_estimate_gpz",
-                "photoz_estimate_tpz",
-                "photoz_estimate_lephare",
-                "photoz_estimate_cmnn",
-            },
+            inputs,
+            expected_inputs=set(expected_inputs),
+            expected_outputs=set(expected_outputs),
         )
         tester.run(butler, self)

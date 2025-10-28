@@ -29,11 +29,13 @@ __all__ = [
 from rail.estimation.algos.lephare import LephareEstimator
 from rail.estimation.estimator import CatEstimator
 
+import lsst.pex.config as pexConfig
 from lsst.meas.photoz.base import (
     EstimatePhotozAlgoConfigBase,
     EstimatePhotozAlgoTask,
     EstimatePhotozTask,
     EstimatePhotozTaskConfig,
+    photozAlgoRegistry,
 )
 
 
@@ -49,10 +51,15 @@ class EstimatePhotozLephareAlgoConfig(EstimatePhotozAlgoConfigBase):
     def estimator_class(cls) -> type[CatEstimator]:
         return LephareEstimator
 
+    @classmethod
+    def stage_name(cls):
+        return "lephare"
+
 
 EstimatePhotozLephareAlgoConfig._make_fields()
 
 
+@pexConfig.registerConfigurable(EstimatePhotozLephareAlgoConfig.stage_name(), photozAlgoRegistry)
 class EstimatePhotozLephareAlgoTask(EstimatePhotozAlgoTask):
     """SubTask that runs RAIL Lephare algorithm for p(z) estimation
 
@@ -75,14 +82,10 @@ class EstimatePhotozLephareConfig(EstimatePhotozTaskConfig):
     """
 
     def setDefaults(self) -> None:
-        self.photoz_algo.retarget(EstimatePhotozLephareAlgoTask)
-        self.photoz_algo.stage_name = "lephare"
-        self.photoz_algo.output_mode = "return"
-        self.photoz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
-        self.photoz_algo.bands = self.photoz_algo.get_mag_name_list()
-        self.photoz_algo.err_bands = self.photoz_algo.get_mag_err_name_list()
-        self.photoz_algo.mag_limits = self.photoz_algo.get_mag_lim_dict()
-        self.photoz_algo.band_a_env = self.photoz_algo.get_band_a_env_dict()
+        super().setDefaults()
+        name = EstimatePhotozLephareAlgoConfig.stage_name()
+        self.connections.algo = name
+        self.photoz_algo = name
 
 
 class EstimatePhotozLephareTask(EstimatePhotozTask):

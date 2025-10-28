@@ -80,10 +80,10 @@ DAF_BUTLER_REPOSITORY_INDEX = os.environ.get("DAF_BUTLER_REPOSITORY_INDEX", None
 IS_S3DF = DAF_BUTLER_REPOSITORY_INDEX == "/sdf/group/rubin/shared/data-repos.yaml"
 
 
-def makeButler_repo_dc2(**kwargs: Any) -> Butler:
+def makeButler_repo_dp1(**kwargs: Any) -> Butler:
     butler = Butler.from_config(
-        "/repo/dc2",
-        collections=["2.2i/runs/test-med-1/w_2024_16/DM-43972"],
+        "/repo/dp1_prep",
+        collections=["LSSTComCam/runs/DRP/DP1/v29_0_0/DM-50260"],
         **kwargs,
     )
     return butler
@@ -121,5 +121,5 @@ def test_pz_task_s3df(
 ) -> None:
     if estimator_class is None:
         pytest.skip(f"Missing {algo_name} in env")
-    butler = makeButler_repo_dc2()
+    butler = makeButler_repo_dp1()
     run_pz_task_s3df(algo_name, butler, model_file, estimator_class)

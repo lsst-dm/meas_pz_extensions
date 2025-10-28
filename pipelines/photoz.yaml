@@ -1,0 +1,31 @@
+description: |
+  Estimate photometric redshifts with all algorithms, including base
+imports:
+  - $MEAS_PHOTOZ_BASE_DIR/pipelines/photoz.yaml
+tasks:
+  photoz_cmnn:
+    class: lsst.meas.photoz.algorithms.estimate_photoz_task_cmnn.EstimatePhotozCMNNTask
+  photoz_dnf:
+    class: lsst.meas.photoz.algorithms.estimate_photoz_task_dnf.EstimatePhotozDNFTask
+  photoz_fzboost:
+    class: lsst.meas.photoz.algorithms.estimate_photoz_task_fzboost.EstimatePhotozFZBoostTask
+  photoz_gpz:
+    class: lsst.meas.photoz.algorithms.estimate_photoz_task_gpz.EstimatePhotozGPZTask
+  photoz_lephare:
+    class: lsst.meas.photoz.algorithms.estimate_photoz_task_lephare.EstimatePhotozLephareTask
+  photoz_tpz:
+    class: lsst.meas.photoz.algorithms.estimate_photoz_task_tpz.EstimatePhotozTPZTask
+subsets:
+  photoz_all:
+    subset:
+      - photoz_bpz
+      - photoz_dnf
+      - photoz_fzboost
+      - photoz_gpz
+      - photoz_cmnn
+      - photoz_knn
+      - photoz_lephare
+      - photoz_tpz
+      - photoz_trainz
+    description: |
+      All of the photo-z algorithms

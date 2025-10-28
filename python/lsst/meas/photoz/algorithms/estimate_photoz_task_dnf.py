@@ -29,11 +29,13 @@ __all__ = [
 from rail.estimation.algos.dnf import DNFEstimator
 from rail.estimation.estimator import CatEstimator
 
+import lsst.pex.config as pexConfig
 from lsst.meas.photoz.base import (
     EstimatePhotozAlgoConfigBase,
     EstimatePhotozAlgoTask,
     EstimatePhotozTask,
     EstimatePhotozTaskConfig,
+    photozAlgoRegistry,
 )
 
 
@@ -49,10 +51,15 @@ class EstimatePhotozDNFAlgoConfig(EstimatePhotozAlgoConfigBase):
     def estimator_class(cls) -> type[CatEstimator]:
         return DNFEstimator
 
+    @classmethod
+    def stage_name(cls):
+        return "dnf"
+
 
 EstimatePhotozDNFAlgoConfig._make_fields()
 
 
+@pexConfig.registerConfigurable(EstimatePhotozDNFAlgoConfig.stage_name(), photozAlgoRegistry)
 class EstimatePhotozDNFAlgoTask(EstimatePhotozAlgoTask):
     """SubTask that runs RAIL DNF algorithm for p(z) estimation
 
@@ -72,14 +79,10 @@ class EstimatePhotozDNFConfig(EstimatePhotozTaskConfig):
     """
 
     def setDefaults(self) -> None:
-        self.photoz_algo.retarget(EstimatePhotozDNFAlgoTask)
-        self.photoz_algo.stage_name = "dnf"
-        self.photoz_algo.output_mode = "return"
-        self.photoz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
-        self.photoz_algo.bands = self.photoz_algo.get_mag_name_list()
-        self.photoz_algo.err_bands = self.photoz_algo.get_mag_err_name_list()
-        self.photoz_algo.mag_limits = self.photoz_algo.get_mag_lim_dict()
-        self.photoz_algo.band_a_env = self.photoz_algo.get_band_a_env_dict()
+        super().setDefaults()
+        name = EstimatePhotozDNFAlgoConfig.stage_name()
+        self.connections.algo = name
+        self.photoz_algo = name
 
 
 class EstimatePhotozDNFTask(EstimatePhotozTask):

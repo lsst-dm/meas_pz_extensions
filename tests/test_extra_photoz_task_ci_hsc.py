@@ -37,12 +37,29 @@ from lsst.daf.butler import (
 )
 
 PIPELINES_DIR = os.path.join(os.path.dirname(__file__), "..", "pipelines")
-TEST_DIR = os.path.abspath(os.path.dirname(__file__))
-TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
 CI_HSC_GEN3_DIR = os.environ.get("CI_HSC_GEN3_DIR", None)
-DAF_BUTLER_REPOSITORY_INDEX = os.environ.get("DAF_BUTLER_REPOSITORY_INDEX", None)
-IS_S3DF = DAF_BUTLER_REPOSITORY_INDEX == "/sdf/group/rubin/shared/data-repos.yaml"
 USER = os.environ.get("USER", "MysteriousStanger")
+
+
+algorithms = (
+    "bpz",
+    # "cmnn", # works but takes 5-10 min
+    "dnf",
+    "fzboost",
+    "gpz",
+    # "lephare", # slow and doesn't work
+    # "tpz", # doesn't work, not sure why
+)
+
+dim_universe = DimensionUniverse()
+patch_dimensions = DimensionGroup(
+    dim_universe,
+    ["skymap", "tract", "patch"],
+)
+instrument_dimensions = DimensionGroup(
+    dim_universe,
+    ["instrument"],
+)
 
 
 class MeasPzTasksTestCase(unittest.TestCase):
@@ -57,90 +74,27 @@ class MeasPzTasksTestCase(unittest.TestCase):
 
     dim_universe = DimensionUniverse()
 
-    objectTable_dimension_group = DimensionGroup(
-        dim_universe,
-        ["skymap", "tract", "patch"],
-    )
-
     objectTable_datasetType = DatasetType(
         "objectTable",
-        dimensions=objectTable_dimension_group,
+        dimensions=patch_dimensions,
         storageClass="ArrowAstropy",
     )
 
-    photozModel_dimension_group = DimensionGroup(
-        dim_universe,
-        ["instrument"],
-    )
+    photoz_model_datasetTypes = {
+        algo: DatasetType(
+            f"photoz_model_{algo}",
+            dimensions=instrument_dimensions,
+            storageClass="PhotozModel",
+            isCalibration=True,
+        )
+        for algo in algorithms
+    }
 
-    photozModel_bpz_datasetType = DatasetType(
-        "photozModel_bpz",
-        dimensions=photozModel_dimension_group,
-        storageClass="PhotozModel",
-        isCalibration=True,
-    )
+    model_files = {algo: f"models/hsc/model_inform_{algo}_wrap.pickle" for algo in algorithms}
 
-    photozModel_cmnn_datasetType = DatasetType(
-        "photozModel_cmnn",
-        dimensions=photozModel_dimension_group,
-        storageClass="PhotozModel",
-        isCalibration=True,
-    )
+    output_datasetTypes = {algo: f"photoz_ensemble_{algo}" for algo in algorithms}
 
-    photozModel_dnf_datasetType = DatasetType(
-        "photozModel_dnf",
-        dimensions=photozModel_dimension_group,
-        storageClass="PhotozModel",
-        isCalibration=True,
-    )
-
-    photozModel_fzboost_datasetType = DatasetType(
-        "photozModel_fzboost",
-        dimensions=photozModel_dimension_group,
-        storageClass="PhotozModel",
-        isCalibration=True,
-    )
-
-    photozModel_gpz_datasetType = DatasetType(
-        "photozModel_gpz",
-        dimensions=photozModel_dimension_group,
-        storageClass="PhotozModel",
-        isCalibration=True,
-    )
-
-    photozModel_lephare_datasetType = DatasetType(
-        "photozModel_lephare",
-        dimensions=photozModel_dimension_group,
-        storageClass="PhotozModel",
-        isCalibration=True,
-    )
-
-    photozModel_tpz_datasetType = DatasetType(
-        "photozModel_tpz",
-        dimensions=photozModel_dimension_group,
-        storageClass="PhotozModel",
-        isCalibration=True,
-    )
-
-    dataset_types = [
-        photozModel_bpz_datasetType,
-        # photozModel_cmnn_datasetType,
-        photozModel_dnf_datasetType,
-        photozModel_fzboost_datasetType,
-        photozModel_gpz_datasetType,
-        # photozModel_lephare_datasetType,
-        photozModel_tpz_datasetType,
-    ]
-
-    model_files = [
-        "models/dc2/model_inform_bpz_wrap.pickle",
-        # "models/dc2/model_inform_cmnn_wrap.pickle",
-        "models/dc2/model_inform_dnf_wrap.pickle",
-        "models/dc2/model_inform_fzboost_wrap.pickle",
-        "models/dc2/model_inform_gpz_wrap.pickle",
-        # "models/dc2/model_inform_lephare_wrap.pickle",
-        "models/dc2/model_inform_tpz_wrap.pickle",
-    ]
+    task_labels = {algo: f"photoz_{algo}" for algo in algorithms}
 
     def makeButler_ci_hsc(self, **kwargs: Any) -> Butler:
         assert CI_HSC_GEN3_DIR
@@ -155,49 +109,65 @@ class MeasPzTasksTestCase(unittest.TestCase):
         to_delete = []
 
         butler = self.makeButler_ci_hsc(writeable=True)
+        collection_models = f"u/{USER}/pz_models"
 
-        butler.registry.registerRun(f"u/{USER}/pz_models")
-        for model_file_, dataset_type in zip(self.model_files, self.dataset_types):
+        butler.registry.registerRun(collection_models)
+        for algo, model_file in self.model_files.items():
+            datasetType = self.photoz_model_datasetTypes[algo]
+            print(f"registering {model_file}")
             modelpath = os.path.abspath(
                 os.path.expandvars(
-                    os.path.join("${TESTDATA_RAIL_DIR}", model_file_),
+                    os.path.join("${TESTDATA_RAIL_DIR}", model_file),
                 )
             )
 
-            butler.registry.registerDatasetType(dataset_type)
+            butler.registry.registerDatasetType(datasetType)
             dataset_ref = DatasetRef(
-                dataset_type,
+                datasetType,
                 DataCoordinate.from_full_values(
-                    self.photozModel_dimension_group,
+                    instrument_dimensions,
                     ("HSC",),
                 ),
-                run=f"u/{USER}/pz_models",
+                run=collection_models,
             )
             butler.ingest(FileDataset(modelpath, dataset_ref))
 
-        result = subprocess.run(
-            [
-                "pipetask",
-                "run",
-                "--register-dataset-types",
-                "-b",
-                os.path.join(CI_HSC_GEN3_DIR, "DATA"),
-                "-i",
-                f"HSC/runs/ci_hsc,u/{USER}/pz_models",
-                "-o",
-                f"u/{USER}/pz_rail_testing",
-                "-p",
-                os.path.join(TEST_DATA_DIR, "extras", "photoz_all_lsst.yaml"),
-                "-d",
-                "\"skymap='discrete/ci_hsc' AND tract=0 AND patch=69\"",
-            ]
-        )
+        pipeline = os.path.join(PIPELINES_DIR, "photoz.yaml#")
+        configs = []
+        for task_label in self.task_labels.values():
+            configs.extend([
+                "-c", f"{task_label}:connections.objects=objectTable_tract",
+                "-c", f"{task_label}:photoz_algo.active.bands_to_convert=grizy",
+            ])
+            pipeline += f"{task_label},"
+
+        butler_path = os.path.join(CI_HSC_GEN3_DIR, "DATA")
+
+        collection_out = f"u/{USER}/pz_rail_testing"
+        run_args = [
+            "pipetask",
+            "run",
+            "--register-dataset-types",
+            "-b",
+            butler_path,
+            "-i",
+            f"HSC/runs/ci_hsc,{collection_models}",
+            "-o",
+            collection_out,
+            "-d",
+            "skymap='discrete/ci_hsc' AND tract=0 AND patch=69",
+            "-p",
+            pipeline[:-1],
+        ]
+        print(run_args + configs)
+
+        result = subprocess.run(run_args + configs)
 
         assert result.returncode == 0
 
-        for output_dataset_type in self.output_dataset_types:
+        for output_datasetType in self.output_datasetTypes.values():
             output_pz = butler.get(
-                output_dataset_type,
+                output_datasetType,
                 dict(skymap="discrete/ci_hsc", tract=0, patch=69),
                 collections=[f"u/{USER}/pz_rail_testing"],
             )
@@ -208,8 +178,20 @@ class MeasPzTasksTestCase(unittest.TestCase):
             os.unlink(fdel_)
 
         # Success, go ahead and cleanup the butler
-        subprocess.run(
-            [
-                "tests/cleanup.sh",
-            ]
-        )
+        for collection in (f"{collection_out}*", collection_models):
+            subprocess.run([
+                "butler",
+                "remove-runs",
+                butler_path,
+                collection,
+                "--no-confirm",
+               "--force",
+            ])
+        subprocess.run([
+            "butler",
+            "remove-collections",
+            butler_path,
+            f"{collection_out}*",
+            "--no-confirm",
+        ])
+
