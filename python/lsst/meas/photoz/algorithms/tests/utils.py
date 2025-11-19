@@ -1,3 +1,24 @@
+# This file is part of meas_photoz_algorithms.
+#
+# Developed for the LSST Data Management System.
+# This product includes software developed by the LSST Project
+# (https://www.lsst.org).
+# See the COPYRIGHT file at the top-level directory of this distribution
+# for details of code ownership.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os
 from collections.abc import Callable
 from typing import Any
@@ -28,7 +49,7 @@ def hsc_config_callback(config: EstimatePhotozTaskConfig) -> None:
     """Set up config for HSC column names"""
     config_algo = config.photoz_algo.active
     _set_config(config_algo, HscCatalogConfig.build_base_dict())
-    config_algo.bands = ["g", "r", "i", "z", "y"]
+    config_algo.bands_to_convert = ["g", "r", "i", "z", "y"]
     # We should be using these for consistency
     # but there are some infinites, so for now we use gaap1p0
     # config_algo.flux_column_template = "{band}_cModelFlux"
@@ -42,8 +63,7 @@ def hsc_config_callback(config: EstimatePhotozTaskConfig) -> None:
         config_algo,
         dict(
             ref_band="HSCi_cmodel_dered",
-            bands=list(config_algo.get_mag_names().values()),
-            err_bands=list(config_algo.get_mag_err_names().values()),
+            err_bands_to_convert=list(config_algo.get_mag_err_names().values()),
             mag_limits=config_algo.get_mag_lim_dict(),
             band_a_env=config_algo.get_band_a_env_dict(),
             filter_list=[
@@ -61,7 +81,7 @@ def dc2_config_callback(config: EstimatePhotozTaskConfig) -> None:
     """Set up config for DC2 column names"""
     config_algo = config.photoz_algo.active
     _set_config(config_algo, Dc2CatalogConfig.build_base_dict())
-    config_algo.bands = ["u", "g", "r", "i", "z", "y"]
+    config_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
     config_algo.flux_column_template = "{band}_cModelFlux"
     config_algo.flux_err_column_template = "{band}_cModelFluxErr"
     config_algo.mag_template = "mag_{band}_cModel_obj_dered"
@@ -70,8 +90,7 @@ def dc2_config_callback(config: EstimatePhotozTaskConfig) -> None:
         config_algo,
         dict(
             ref_band="mag_i_cModel_obj_dered",
-            bands=list(config_algo.get_mag_names().values()),
-            err_bands=list(config_algo.get_mag_err_names().values()),
+            err_bands_to_convert=list(config_algo.get_mag_err_names().values()),
             mag_limits=config_algo.get_mag_lim_dict(),
             band_a_env=config_algo.get_band_a_env_dict(),
         ),
@@ -82,7 +101,7 @@ def com_cam_config_callback(config: EstimatePhotozTaskConfig) -> None:
     """Set up config for com cam column names"""
     config_algo = config.photoz_algo.active
     _set_config(config_algo, ComCamCatalogConfig.build_base_dict())
-    config_algo.bands = ["u", "g", "r", "i", "z", "y"]
+    config_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
     config_algo.flux_column_template = "{band}_cModelFlux"
     config_algo.flux_err_column_template = "{band}_cModelFluxErr"
     config_algo.mag_template = "{band}_cModelMag"
@@ -91,8 +110,7 @@ def com_cam_config_callback(config: EstimatePhotozTaskConfig) -> None:
         config_algo,
         dict(
             ref_band="i_cModelMag",
-            bands=list(config_algo.get_mag_names().values()),
-            err_bands=list(config_algo.get_mag_err_names().values()),
+            err_bands_to_convert=list(config_algo.get_mag_err_names().values()),
             mag_limits=config_algo.get_mag_lim_dict(),
             band_a_env=config_algo.get_band_a_env_dict(),
         ),
@@ -109,9 +127,9 @@ def dc2_check_callback(output: qp.Ensemble) -> None:
     assert output.npdf == 1000
 
 
-def dc2_butler_check_callback(output: qp.Ensemble) -> None:
+def dc2_butler_check_callback(output: qp.Ensemble, inputs) -> None:
     """Check on the return ensemble for DC2"""
-    assert output.npdf == 29358
+    assert output.npdf == len(inputs)
 
 
 def com_cam_check_callback(output: qp.Ensemble) -> None:
@@ -139,7 +157,7 @@ def do_pz_task(
         config_callback(task_config)
     task = estimator_class(True, config=task_config)
     to_delete = []
-    output = task.run(photoz_model, data)
+    output = task.run(photoz_model=photoz_model, fluxes=data)
     output_path = f"output_{algo_name}.hdf5"
     output.photoz_ensemble.write_to(output_path)
     to_delete.append(output_path)
@@ -170,16 +188,16 @@ def run_pz_task_s3df(
     dc2_config_callback(task_config)
     task = estimator_class(True, config=task_config)
     dd = butler.getDeferred(
-        "objectTable",
+        "object_patch",
         skymap="lsst_cells_v1",
         tract=5063,
         patch=34,
     ).get(parameters=dict(columns=task.photoz_algo.col_names()))
-    output = task.run(photoz_model, dd)
+    output = task.run(photoz_model=photoz_model, fluxes=dd)
     output.photoz_ensemble.write_to(f"output_{algo_name}.hdf5")
     to_delete.append(f"output_{algo_name}.hdf5")
     test_out = qp.read(f"output_{algo_name}.hdf5")
     assert isinstance(test_out, qp.Ensemble)
-    dc2_butler_check_callback(test_out)
+    dc2_butler_check_callback(test_out, dd)
     for fdel_ in to_delete:
         os.unlink(fdel_)
