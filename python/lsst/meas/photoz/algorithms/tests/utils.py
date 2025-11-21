@@ -1,0 +1,203 @@
+# This file is part of meas_photoz_algorithms.
+#
+# Developed for the LSST Data Management System.
+# This product includes software developed by the LSST Project
+# (https://www.lsst.org).
+# See the COPYRIGHT file at the top-level directory of this distribution
+# for details of code ownership.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import os
+from collections.abc import Callable
+from typing import Any
+
+import qp
+from astropy.table import Table
+from rail.core.model import Model as PhotozModel
+from rail.utils.catalog_utils import (
+    ComCamCatalogConfig,
+    Dc2CatalogConfig,
+    HscCatalogConfig,
+)
+
+from lsst.daf.butler import Butler
+from lsst.meas.photoz.base import EstimatePhotozTask, EstimatePhotozTaskConfig
+
+
+def _set_config(config: EstimatePhotozTaskConfig, config_dict: dict[str, Any]) -> None:
+    """Add key,value pairs from a dict to a PexConfig ojbect"""
+    for key, val in config_dict.items():
+        try:
+            setattr(config, key, val)
+        except AttributeError:
+            pass
+
+
+def hsc_config_callback(config: EstimatePhotozTaskConfig) -> None:
+    """Set up config for HSC column names"""
+    config_algo = config.photoz_algo.active
+    _set_config(config_algo, HscCatalogConfig.build_base_dict())
+    config_algo.bands_to_convert = ["g", "r", "i", "z", "y"]
+    # We should be using these for consistency
+    # but there are some infinites, so for now we use gaap1p0
+    # config_algo.flux_column_template = "{band}_cModelFlux"
+    # config_algo.flux_err_column_template = "{band}_cModelFluxErr"
+    config_algo.flux_column_template = "{band}_gaap1p0Flux"
+    config_algo.flux_err_column_template = "{band}_gaap1p0FluxErr"
+    config_algo.mag_template = "HSC{band}_cmodel_dered"
+    config_algo.mag_err_template = "{band}_cmodel_magerr"
+    config_algo.deredden = False
+    _set_config(
+        config_algo,
+        dict(
+            ref_band="HSCi_cmodel_dered",
+            err_bands_to_convert=list(config_algo.get_mag_err_names().values()),
+            mag_limits=config_algo.get_mag_lim_dict(),
+            band_a_env=config_algo.get_band_a_env_dict(),
+            filter_list=[
+                "DC2LSST_g",
+                "DC2LSST_r",
+                "DC2LSST_i",
+                "DC2LSST_z",
+                "DC2LSST_y",
+            ],
+        ),
+    )
+
+
+def dc2_config_callback(config: EstimatePhotozTaskConfig) -> None:
+    """Set up config for DC2 column names"""
+    config_algo = config.photoz_algo.active
+    _set_config(config_algo, Dc2CatalogConfig.build_base_dict())
+    config_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
+    config_algo.flux_column_template = "{band}_cModelFlux"
+    config_algo.flux_err_column_template = "{band}_cModelFluxErr"
+    config_algo.mag_template = "mag_{band}_cModel_obj_dered"
+    config_algo.mag_err_template = "magerr_{band}_cModel_obj"
+    _set_config(
+        config_algo,
+        dict(
+            ref_band="mag_i_cModel_obj_dered",
+            err_bands_to_convert=list(config_algo.get_mag_err_names().values()),
+            mag_limits=config_algo.get_mag_lim_dict(),
+            band_a_env=config_algo.get_band_a_env_dict(),
+        ),
+    )
+
+
+def com_cam_config_callback(config: EstimatePhotozTaskConfig) -> None:
+    """Set up config for com cam column names"""
+    config_algo = config.photoz_algo.active
+    _set_config(config_algo, ComCamCatalogConfig.build_base_dict())
+    config_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
+    config_algo.flux_column_template = "{band}_cModelFlux"
+    config_algo.flux_err_column_template = "{band}_cModelFluxErr"
+    config_algo.mag_template = "{band}_cModelMag"
+    config_algo.mag_err_template = "{band}_cModelMagErr"
+    _set_config(
+        config_algo,
+        dict(
+            ref_band="i_cModelMag",
+            err_bands_to_convert=list(config_algo.get_mag_err_names().values()),
+            mag_limits=config_algo.get_mag_lim_dict(),
+            band_a_env=config_algo.get_band_a_env_dict(),
+        ),
+    )
+
+
+def hsc_check_callback(output: qp.Ensemble) -> None:
+    """Check on the return ensemble for HSC"""
+    assert output.npdf == 1000
+
+
+def dc2_check_callback(output: qp.Ensemble) -> None:
+    """Check on the return ensemble for DC2"""
+    assert output.npdf == 1000
+
+
+def dc2_butler_check_callback(output: qp.Ensemble, inputs) -> None:
+    """Check on the return ensemble for DC2"""
+    assert output.npdf == len(inputs)
+
+
+def com_cam_check_callback(output: qp.Ensemble) -> None:
+    """Check on the return ensemble for ComCam"""
+    assert output.npdf == 1000
+
+
+def do_pz_task(
+    algo_name: str,
+    model_file: str,
+    data: Table,
+    estimator_class: type[EstimatePhotozTask],
+    config_callback: Callable | None = None,
+    check_callback: Callable | None = None,
+) -> None:
+    """Run a single estimator task"""
+    modelpath = os.path.abspath(
+        os.path.expandvars(
+            os.path.join("${TESTDATA_RAIL_DIR}", model_file),
+        )
+    )
+    photoz_model = PhotozModel.read(modelpath)
+    task_config = estimator_class.ConfigClass()
+    if config_callback:
+        config_callback(task_config)
+    task = estimator_class(True, config=task_config)
+    to_delete = []
+    output = task.run(photoz_model=photoz_model, fluxes=data)
+    output_path = f"output_{algo_name}.hdf5"
+    output.photoz_ensemble.write_to(output_path)
+    to_delete.append(output_path)
+    test_out = qp.read(output_path)
+    assert isinstance(test_out, qp.Ensemble)
+    if check_callback:
+        check_callback(test_out)
+    for fdel_ in to_delete:
+        os.unlink(fdel_)
+
+
+def run_pz_task_s3df(
+    algo_name: str,
+    butler: Butler,
+    model_file: str,
+    estimator_class: type[EstimatePhotozTask],
+) -> None:
+    """Run a single estimator task against DC2"""
+    to_delete = []
+
+    modelpath = os.path.abspath(
+        os.path.expandvars(
+            os.path.join("${TESTDATA_RAIL_DIR}", model_file),
+        )
+    )
+    photoz_model = PhotozModel.read(modelpath)
+    task_config = estimator_class.ConfigClass()
+    dc2_config_callback(task_config)
+    task = estimator_class(True, config=task_config)
+    dd = butler.getDeferred(
+        "object_patch",
+        skymap="lsst_cells_v1",
+        tract=5063,
+        patch=34,
+    ).get(parameters=dict(columns=task.photoz_algo.col_names()))
+    output = task.run(photoz_model=photoz_model, fluxes=dd)
+    output.photoz_ensemble.write_to(f"output_{algo_name}.hdf5")
+    to_delete.append(f"output_{algo_name}.hdf5")
+    test_out = qp.read(f"output_{algo_name}.hdf5")
+    assert isinstance(test_out, qp.Ensemble)
+    dc2_butler_check_callback(test_out, dd)
+    for fdel_ in to_delete:
+        os.unlink(fdel_)

@@ -1,4 +1,4 @@
-# This file is part of meas_pz
+# This file is part of meas_photoz_algorithms
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project
@@ -29,6 +29,10 @@ from lsst.daf.butler.tests import DatastoreMock
 from lsst.daf.butler.tests.utils import makeTestTempDir, removeTestTempDir
 from lsst.pipe.base.tests.pipelineStepTester import PipelineStepTester
 
+import lsst.meas.photoz.base.all_algos as all_algos_base
+import lsst.meas.photoz.algorithms.all_algos as all_algos
+from lsst.meas.photoz.base.estimate_photoz_task import EstimatePhotozConnections, photozAlgoRegistry
+
 PIPELINES_DIR = os.path.join(os.path.dirname(__file__), "..", "pipelines")
 TEST_DIR = os.path.abspath(os.path.dirname(__file__))
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data", "extras")
@@ -37,12 +41,10 @@ TEST_DATA_DIR = os.path.join(TEST_DIR, "data", "extras")
 class MeasPzExtraPipelineTestCase(unittest.TestCase):
     """Test the PZ pipeline plumbing for partially supported algorithms.
 
-    This uses the `PipelineStepTester` to test
-    a test pipeline define in tests/data/pz_pipeline_all_lsst.yaml
+    This uses the `PipelineStepTester` to test pipelines/photoz.yaml.
 
-    This should include any algorithms that are wrapped in meas_pz.
-
-    For now that is cmnn, gpz, dnf, fzboost, gpz, tpz, and lephare
+    This should include any algorithms that are wrapped in this package
+    or in meas_photoz_base.
     """
 
     def setUp(self) -> None:
@@ -67,37 +69,29 @@ class MeasPzExtraPipelineTestCase(unittest.TestCase):
     def test_extra_pz_pipeline(self) -> None:
         butler = self.makeButler(writeable=True)
 
+        expected_inputs = ["object"]
+        expected_outputs = []
+        inputs = [("object", {"skymap", "tract"}, "ArrowAstropy", False)]
+        names = list(photozAlgoRegistry.keys())
+        tasks = list(photozAlgoRegistry.values())
+        all_tasks, all_tasks_base = (
+            tuple(x for x in aa.__all__ if x != "photozAlgoRegistry") for aa in (all_algos, all_algos_base)
+        )
+        assert set(all_tasks).issuperset(set(all_tasks_base))
+        assert len(names) == len(all_tasks)
+        assert set(tasks) == set([getattr(all_algos, attr) for attr in all_tasks])
+
+        for algo in names:
+            dataset = EstimatePhotozConnections.photoz_model.name.format(algo=algo)
+            expected_inputs.append(dataset)
+            expected_outputs.append(EstimatePhotozConnections.photoz_ensemble.name.format(algo=algo))
+            inputs.append((dataset, {"instrument"}, "PhotozModel", True))
+
         tester = PipelineStepTester(
-            os.path.join(TEST_DATA_DIR, "pz_pipeline_all_lsst.yaml"),
-            ["#all_pz"],
-            [
-                ("object", {"skymap", "tract"}, "ArrowAstropy", False),
-                ("pzModel_bpz", {"instrument"}, "PZModel", True),
-                ("pzModel_dnf", {"instrument"}, "PZModel", True),
-                ("pzModel_fzboost", {"instrument"}, "PZModel", True),
-                ("pzModel_gpz", {"instrument"}, "PZModel", True),
-                ("pzModel_tpz", {"instrument"}, "PZModel", True),
-                ("pzModel_lephare", {"instrument"}, "PZModel", True),
-                ("pzModel_cmnn", {"instrument"}, "PZModel", True),
-            ],
-            expected_inputs={
-                "object",
-                "pzModel_bpz",
-                "pzModel_dnf",
-                "pzModel_fzboost",
-                "pzModel_gpz",
-                "pzModel_tpz",
-                "pzModel_lephare",
-                "pzModel_cmnn",
-            },
-            expected_outputs={
-                "pz_estimate_bpz",
-                "pz_estimate_dnf",
-                "pz_estimate_fzboost",
-                "pz_estimate_gpz",
-                "pz_estimate_tpz",
-                "pz_estimate_lephare",
-                "pz_estimate_cmnn",
-            },
+            os.path.join(PIPELINES_DIR, "photoz.yaml"),
+            ["#photoz_all"],
+            inputs,
+            expected_inputs=set(expected_inputs),
+            expected_outputs=set(expected_outputs),
         )
         tester.run(butler, self)

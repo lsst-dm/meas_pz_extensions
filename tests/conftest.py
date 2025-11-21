@@ -7,7 +7,7 @@ try:
     TESTDATA_RAIL_DIR = os.environ["TESTDATA_RAIL_DIR"]
 except KeyError:
     raise KeyError(
-        "TESTDATA_RAIL must be installed and TESTDATA_RAIL_DIR set to run meas_pz unit tests"
+        "TESTDATA_RAIL must be installed and TESTDATA_RAIL_DIR set to run meas_photoz_algorithms unit tests"
     ) from None
 
 

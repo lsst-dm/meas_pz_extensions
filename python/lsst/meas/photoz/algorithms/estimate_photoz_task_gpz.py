@@ -1,4 +1,4 @@
-# This file is part of meas_pz.
+# This file is part of meas_photoz_algorithms.
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project
@@ -20,25 +20,27 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 __all__ = [
-    "EstimatePZGPZAlgoConfig",
-    "EstimatePZGPZAlgoTask",
-    "EstimatePZGPZTask",
-    "EstimatePZGPZConfig",
+    "EstimatePhotozGPZAlgoConfig",
+    "EstimatePhotozGPZAlgoTask",
+    "EstimatePhotozGPZConfig",
+    "EstimatePhotozGPZTask",
 ]
 
 from rail.estimation.algos.gpz import GPzEstimator
 from rail.estimation.estimator import CatEstimator
 
-from .estimate_pz_task import (
-    EstimatePZAlgoConfigBase,
-    EstimatePZAlgoTask,
-    EstimatePZTask,
-    EstimatePZTaskConfig,
+import lsst.pex.config as pexConfig
+from lsst.meas.photoz.base import (
+    EstimatePhotozAlgoConfigBase,
+    EstimatePhotozAlgoTask,
+    EstimatePhotozTask,
+    EstimatePhotozTaskConfig,
+    photozAlgoRegistry,
 )
 
 
-class EstimatePZGPZAlgoConfig(EstimatePZAlgoConfigBase):
-    """Config for EstimatePZGPZAlgoTask
+class EstimatePhotozGPZAlgoConfig(EstimatePhotozAlgoConfigBase):
+    """Config for EstimatePhotozGPZAlgoTask
 
     This will select and configure the GPzEstimator p(z)
     estimation algorithm
@@ -49,43 +51,51 @@ class EstimatePZGPZAlgoConfig(EstimatePZAlgoConfigBase):
     def estimator_class(cls) -> type[CatEstimator]:
         return GPzEstimator
 
+    @classmethod
+    def stage_name(cls):
+        return "gpz"
 
-EstimatePZGPZAlgoConfig._make_fields()
+    def _finalize(self):
+        super()._finalize()
+        if not self.replace_error_vals:
+            self.replace_error_vals = [0.1] * len(self.bands)
+
+    def setDefaults(self):
+        super().setDefaults()
+        self.replace_error_vals = []
 
 
-class EstimatePZGPZAlgoTask(EstimatePZAlgoTask):
+EstimatePhotozGPZAlgoConfig._make_fields()
+
+
+@pexConfig.registerConfigurable(EstimatePhotozGPZAlgoConfig.stage_name(), photozAlgoRegistry)
+class EstimatePhotozGPZAlgoTask(EstimatePhotozAlgoTask):
     """SubTask that runs RAIL GPZ algorithm for p(z) estimation
 
-    See https://github.com/LSSTDESC/rail_gpz_v1/blob/src/rail/estimation/algos/gpz.py  # noqa
+    See https://github.com/LSSTDESC/rail_gpz_v1/blob/src/rail/estimation/algos/gpz.py
     for algorithm implementation.
 
     """
 
-    ConfigClass = EstimatePZGPZAlgoConfig
+    ConfigClass = EstimatePhotozGPZAlgoConfig
     _DefaultName = "estimatePZGPZAlgo"
 
 
-class EstimatePZGPZConfig(EstimatePZTaskConfig):
-    """Config for EstimatePZGPZTask
+class EstimatePhotozGPZConfig(EstimatePhotozTaskConfig):
+    """Config for EstimatePhotozGPZTask
 
     Overrides setDefaults to use GPZ algorithm
     """
 
     def setDefaults(self) -> None:
-        self.pz_algo.retarget(EstimatePZGPZAlgoTask)
-        self.pz_algo.stage_name = "gpz"
-        self.pz_algo.output_mode = "return"
-        self.pz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
-        self.pz_algo.ref_band = self.pz_algo.mag_template.format(band='i')
-        self.pz_algo.bands = self.pz_algo.get_mag_name_list()
-        self.pz_algo.err_bands = self.pz_algo.get_mag_err_name_list()
-        self.pz_algo.mag_limits = self.pz_algo.get_mag_lim_dict()
-        self.pz_algo.band_a_env = self.pz_algo.get_band_a_env_dict()
-        self.pz_algo.replace_error_vals = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+        super().setDefaults()
+        name = EstimatePhotozGPZAlgoConfig.stage_name()
+        self.connections.algo = name
+        self.photoz_algo = name
 
 
-class EstimatePZGPZTask(EstimatePZTask):
+class EstimatePhotozGPZTask(EstimatePhotozTask):
     """Task that runs RAIL GPZ algorithm for p(z) estimation"""
 
-    ConfigClass = EstimatePZGPZConfig
+    ConfigClass = EstimatePhotozGPZConfig
     _DefaultName = "estimatePZGPZ"

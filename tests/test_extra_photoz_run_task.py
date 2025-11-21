@@ -1,4 +1,4 @@
-# This file is part of meas_pz
+# This file is part of meas_photoz_algorithms
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project
@@ -23,75 +23,75 @@
 
 import pytest
 from astropy.table import Table
-from lsst.meas.pz.estimate_pz_task import EstimatePZTask
+from lsst.meas.photoz.base import EstimatePhotozTask
 
 try:
-    from lsst.meas.pz.estimate_pz_task_bpz import EstimatePZBPZTask
+    from lsst.meas.photoz.base.estimate_photoz_task_bpz import EstimatePhotozBPZTask
 except ImportError:
-    EstimatePZBPZTask = None
+    EstimatePhotozBPZTask = None
 
 try:
-    from lsst.meas.pz.estimate_pz_task_cmnn import EstimatePZCMNNTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_cmnn import EstimatePhotozCMNNTask
 except ImportError:
-    EstimatePZCMNNTask = None
+    EstimatePhotozCMNNTask = None
 
 try:
-    from lsst.meas.pz.estimate_pz_task_dnf import EstimatePZDNFTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_dnf import EstimatePhotozDNFTask
 except ImportError:
-    EstimatePZDNFTask = None
+    EstimatePhotozDNFTask = None
 
 try:
-    from lsst.meas.pz.estimate_pz_task_fzboost import EstimatePZFZBoostTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_fzboost import EstimatePhotozFZBoostTask
 except ImportError:
-    EstimatePZFZBoostTask = None
+    EstimatePhotozFZBoostTask = None
 
 try:
-    from lsst.meas.pz.estimate_pz_task_gpz import EstimatePZGPZTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_gpz import EstimatePhotozGPZTask
 except ImportError:
-    EstimatePZGPZTask = None
+    EstimatePhotozGPZTask = None
 
 try:
-    from lsst.meas.pz.estimate_pz_task_lephare import EstimatePZLephareTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_lephare import EstimatePhotozLephareTask
 except ImportError:
-    EstimatePZLephareTask = None
+    EstimatePhotozLephareTask = None
 
 try:
-    from lsst.meas.pz.estimate_pz_task_tpz import EstimatePZTPZTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_tpz import EstimatePhotozTPZTask
 except ImportError:
-    EstimatePZTPZTask = None
+    EstimatePhotozTPZTask = None
 
-from lsst.meas.pz.extensions.tests import utils
+from lsst.meas.photoz.algorithms.tests import utils
 
 
 @pytest.mark.parametrize(
     "algo_name,model_file,estimator_class",
     [
-        ("bpz", "models/hsc/model_inform_bpz_wrap.pickle", EstimatePZBPZTask),
+        ("bpz", "models/hsc/model_inform_bpz_wrap.pickle", EstimatePhotozBPZTask),
         # (
         #    "cmnn",
         #    "models/hsc/model_inform_cmnn_wrap.pickle",
-        #    EstimatePZCMNNTask
+        #    EstimatePhotozCMNNTask
         # ),
-        ("dnf", "models/hsc/model_inform_dnf_wrap.pickle", EstimatePZDNFTask),
+        ("dnf", "models/hsc/model_inform_dnf_wrap.pickle", EstimatePhotozDNFTask),
         (
             "fzboost",
             "models/hsc/model_inform_fzboost_wrap.pickle",
-            EstimatePZFZBoostTask,
+            EstimatePhotozFZBoostTask,
         ),
-        ("gpz", "models/hsc/model_inform_gpz_wrap.pickle", EstimatePZGPZTask),
+        ("gpz", "models/hsc/model_inform_gpz_wrap.pickle", EstimatePhotozGPZTask),
         # (
         #    "lephare",
         #    "models/hsc/model_inform_lephare_wrap.pickle",
-        #    EstimatePZLephareTask,
+        #    EstimatePhotozLephareTask,
         # ),
-        ("tpz", "models/hsc/model_inform_tpz_wrap.pickle", EstimatePZTPZTask),
+        ("tpz", "models/hsc/model_inform_tpz_wrap.pickle", EstimatePhotozTPZTask),
     ],
 )
 def test_pz_task_hsc(
     hsc_dataset: Table,
     algo_name: str,
     model_file: str,
-    estimator_class: type[EstimatePZTask],
+    estimator_class: type[EstimatePhotozTask],
 ) -> None:
     if estimator_class is None:
         pytest.skip(f"Missing {algo_name} in env")
@@ -109,32 +109,32 @@ def test_pz_task_hsc(
 @pytest.mark.parametrize(
     "algo_name,model_file,estimator_class",
     [
-        ("bpz", "models/dc2/model_inform_bpz_wrap.pickle", EstimatePZBPZTask),
+        ("bpz", "models/dc2/model_inform_bpz_wrap.pickle", EstimatePhotozBPZTask),
         # (
         #    "cmnn",
         #    "models/dc2/model_inform_cmnn_wrap.pickle",
-        #    EstimatePZCMNNTask
+        #    EstimatePhotozCMNNTask
         # ),
-        ("dnf", "models/dc2/model_inform_dnf_wrap.pickle", EstimatePZDNFTask),
+        ("dnf", "models/dc2/model_inform_dnf_wrap.pickle", EstimatePhotozDNFTask),
         (
             "fzboost",
             "models/dc2/model_inform_fzboost_wrap.pickle",
-            EstimatePZFZBoostTask,
+            EstimatePhotozFZBoostTask,
         ),
-        ("gpz", "models/dc2/model_inform_gpz_wrap.pickle", EstimatePZGPZTask),
+        ("gpz", "models/dc2/model_inform_gpz_wrap.pickle", EstimatePhotozGPZTask),
         # (
         #    "lephare",
         #    "models/dc2/model_inform_lephare_wrap.pickle",
-        #    EstimatePZLephareTask,
+        #    EstimatePhotozLephareTask,
         # ),
-        ("tpz", "models/dc2/model_inform_tpz_wrap.pickle", EstimatePZTPZTask),
+        ("tpz", "models/dc2/model_inform_tpz_wrap.pickle", EstimatePhotozTPZTask),
     ],
 )
 def test_pz_task_dc2(
     dc2_dataset: Table,
     algo_name: str,
     model_file: str,
-    estimator_class: type[EstimatePZTask],
+    estimator_class: type[EstimatePhotozTask],
 ) -> None:
     if estimator_class is None:
         pytest.skip(f"Missing {algo_name} in env")
@@ -152,32 +152,32 @@ def test_pz_task_dc2(
 @pytest.mark.parametrize(
     "algo_name,model_file,estimator_class",
     [
-        ("bpz", "models/com_cam/model_inform_bpz_wrap.pickle", EstimatePZBPZTask),
+        ("bpz", "models/com_cam/model_inform_bpz_wrap.pickle", EstimatePhotozBPZTask),
         # (
         #     "cmnn",
         #     "models/com_cam/model_inform_cmnn_wrap.pickle",
-        #     EstimatePZCMNNTask
+        #     EstimatePhotozCMNNTask
         # ),
-        ("dnf", "models/com_cam/model_inform_dnf_wrap.pickle", EstimatePZDNFTask),
+        ("dnf", "models/com_cam/model_inform_dnf_wrap.pickle", EstimatePhotozDNFTask),
         (
             "fzboost",
             "models/com_cam/model_inform_fzboost_wrap.pickle",
-            EstimatePZFZBoostTask,
+            EstimatePhotozFZBoostTask,
         ),
-        ("gpz", "models/com_cam/model_inform_gpz_wrap.pickle", EstimatePZGPZTask),
+        ("gpz", "models/com_cam/model_inform_gpz_wrap.pickle", EstimatePhotozGPZTask),
         # (
         #     "lephare",
         #     "models/com_cam/model_inform_lephare_wrap.pickle",
-        #     EstimatePZLephareTask,
+        #     EstimatePhotozLephareTask,
         # ),
-        ("tpz", "models/com_cam/model_inform_tpz_wrap.pickle", EstimatePZTPZTask),
+        ("tpz", "models/com_cam/model_inform_tpz_wrap.pickle", EstimatePhotozTPZTask),
     ],
 )
 def test_pz_task_com_cam(
     com_cam_dataset: Table,
     algo_name: str,
     model_file: str,
-    estimator_class: type[EstimatePZTask],
+    estimator_class: type[EstimatePhotozTask],
 ) -> None:
     if estimator_class is None:
         pytest.skip(f"Missing {algo_name} in env")

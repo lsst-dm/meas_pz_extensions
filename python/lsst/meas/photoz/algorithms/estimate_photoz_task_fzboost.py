@@ -1,4 +1,4 @@
-# This file is part of meas_pz.
+# This file is part of meas_photoz_algorithms.
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project
@@ -20,25 +20,27 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 __all__ = [
-    "EstimatePZFZBoostAlgoConfig",
-    "EstimatePZFZBoostAlgoTask",
-    "EstimatePZFZBoostTask",
-    "EstimatePZFZBoostConfig",
+    "EstimatePhotozFZBoostAlgoConfig",
+    "EstimatePhotozFZBoostAlgoTask",
+    "EstimatePhotozFZBoostConfig",
+    "EstimatePhotozFZBoostTask",
 ]
 
 from rail.estimation.algos.flexzboost import FlexZBoostEstimator
 from rail.estimation.estimator import CatEstimator
 
-from .estimate_pz_task import (
-    EstimatePZAlgoConfigBase,
-    EstimatePZAlgoTask,
-    EstimatePZTask,
-    EstimatePZTaskConfig,
+import lsst.pex.config as pexConfig
+from lsst.meas.photoz.base import (
+    EstimatePhotozAlgoConfigBase,
+    EstimatePhotozAlgoTask,
+    EstimatePhotozTask,
+    EstimatePhotozTaskConfig,
+    photozAlgoRegistry,
 )
 
 
-class EstimatePZFZBoostAlgoConfig(EstimatePZAlgoConfigBase):
-    """Config for EstimatePZFZBoostAlgoTask
+class EstimatePhotozFZBoostAlgoConfig(EstimatePhotozAlgoConfigBase):
+    """Config for EstimatePhotozFZBoostAlgoTask
 
     This will select and configure the FlexZBoostEstimator p(z)
     estimation algorithm
@@ -49,42 +51,42 @@ class EstimatePZFZBoostAlgoConfig(EstimatePZAlgoConfigBase):
     def estimator_class(cls) -> type[CatEstimator]:
         return FlexZBoostEstimator
 
+    @classmethod
+    def stage_name(cls):
+        return "fzboost"
 
-EstimatePZFZBoostAlgoConfig._make_fields()
+
+EstimatePhotozFZBoostAlgoConfig._make_fields()
 
 
-class EstimatePZFZBoostAlgoTask(EstimatePZAlgoTask):
+@pexConfig.registerConfigurable(EstimatePhotozFZBoostAlgoConfig.stage_name(), photozAlgoRegistry)
+class EstimatePhotozFZBoostAlgoTask(EstimatePhotozAlgoTask):
     """SubTask that runs RAIL FZBoost algorithm for p(z) estimation
 
-    See https://github.com/LSSTDESC/rail_flexzboost/blob/main/src/rail/estimation/algos/flexzboost.py.py  # noqa
+    See https://github.com/LSSTDESC/rail_flexzboost/blob/main/src/rail/estimation/algos/flexzboost.py
     for algorithm implementation.
 
     """
 
-    ConfigClass = EstimatePZFZBoostAlgoConfig
+    ConfigClass = EstimatePhotozFZBoostAlgoConfig
     _DefaultName = "estimatePZFZBoostAlgo"
 
 
-class EstimatePZFZBoostConfig(EstimatePZTaskConfig):
-    """Config for EstimatePZFZBoostTask
+class EstimatePhotozFZBoostConfig(EstimatePhotozTaskConfig):
+    """Config for EstimatePhotozFZBoostTask
 
     Overrides setDefaults to use FZBoost algorithm
     """
 
     def setDefaults(self) -> None:
-        self.pz_algo.retarget(EstimatePZFZBoostAlgoTask)
-        self.pz_algo.stage_name = "fzboost"
-        self.pz_algo.output_mode = "return"
-        self.pz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
-        self.pz_algo.ref_band = self.pz_algo.mag_template.format(band='i')
-        self.pz_algo.bands = self.pz_algo.get_mag_name_list()
-        self.pz_algo.err_bands = self.pz_algo.get_mag_err_name_list()
-        self.pz_algo.mag_limits = self.pz_algo.get_mag_lim_dict()
-        self.pz_algo.band_a_env = self.pz_algo.get_band_a_env_dict()
+        super().setDefaults()
+        name = EstimatePhotozFZBoostAlgoConfig.stage_name()
+        self.connections.algo = name
+        self.photoz_algo = name
 
 
-class EstimatePZFZBoostTask(EstimatePZTask):
+class EstimatePhotozFZBoostTask(EstimatePhotozTask):
     """Task that runs RAIL FZBoost algorithm for p(z) estimation"""
 
-    ConfigClass = EstimatePZFZBoostConfig
+    ConfigClass = EstimatePhotozFZBoostConfig
     _DefaultName = "estimatePZFZBoost"

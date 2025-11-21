@@ -1,16 +1,16 @@
-.. py:currentmodule:: lsst.meas.pz.extensions
+.. py:currentmodule:: lsst.meas.photoz.algorithms
 
-.. _lsst.meas.pz.extensions:
+.. _lsst.meas.photoz.algorithms:
 
 #######################
-lsst.meas.pz.extensions
+lsst.meas.photoz.algorithms
 #######################
 
 .. Paragraph that describes what this Python module does and links to related modules and frameworks.
 
-.. .. _lsst.meas.pz.extensions-using:
+.. .. _lsst.meas.photoz.algorithms-using:
 
-.. Using lsst.meas.pz.extensions
+.. Using lsst.meas.photoz.algorithms
 .. =============================
 
 .. toctree linking to topics related to using the module's APIs.
@@ -18,20 +18,20 @@ lsst.meas.pz.extensions
 .. .. toctree::
 ..    :maxdepth: 1
 
-.. _lsst.meas.pz.extensions-contributing:
+.. _lsst.meas.photoz.algorithms-contributing:
 
 Contributing
 ============
 
-``lsst.meas.pz.extensions`` is developed at https://github.com/lsst-dm/meas_pz_extensions.
-You can find Jira issues for this module under the `meas_pz_extensions <https://jira.lsstcorp.org/issues/?jql=project%20%3D%20DM%20AND%20component%20%3D%20meas_pz_extensions>`_ component.
+``lsst.meas.photoz.algorithms`` is developed at https://github.com/lsst-dm/meas_photoz_extension.
+You can find Jira issues for this module under the `meas_photoz_extension <https://jira.lsstcorp.org/issues/?jql=project%20%3D%20DM%20AND%20component%20%3D%20meas_photoz_extension>`_ component.
 
 .. If there are topics related to developing this module (rather than using it), link to this from a toctree placed here.
 
 .. .. toctree::
 ..    :maxdepth: 1
 
-.. .. _lsst.meas.pz.extensions-scripts:
+.. .. _lsst.meas.photoz.algorithms-scripts:
 
 .. Script reference
 .. ================
@@ -41,11 +41,11 @@ You can find Jira issues for this module under the `meas_pz_extensions <https://
 .. .. toctree::
 ..    :maxdepth: 1
 
-.. .. _lsst.meas.pz.extensions-pyapi:
+.. .. _lsst.meas.photoz.algorithms-pyapi:
 
 Python API reference
 ====================
 
-.. automodapi:: lsst.meas.pz.extensions
+.. automodapi:: lsst.meas.photoz.algorithms
    :no-main-docstr:
    :no-inheritance-diagram:

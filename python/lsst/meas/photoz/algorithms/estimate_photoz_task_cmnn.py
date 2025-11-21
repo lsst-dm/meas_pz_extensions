@@ -1,4 +1,4 @@
-# This file is part of meas_pz.
+# This file is part of meas_photoz_algorithms.
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project
@@ -20,25 +20,27 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 __all__ = [
-    "EstimatePZCMNNAlgoConfig",
-    "EstimatePZCMNNAlgoTask",
-    "EstimatePZCMNNTask",
-    "EstimatePZCMNNConfig",
+    "EstimatePhotozCMNNAlgoConfig",
+    "EstimatePhotozCMNNAlgoTask",
+    "EstimatePhotozCMNNConfig",
+    "EstimatePhotozCMNNTask",
 ]
 
 from rail.estimation.algos.cmnn import CMNNEstimator
 from rail.estimation.estimator import CatEstimator
 
-from .estimate_pz_task import (
-    EstimatePZAlgoConfigBase,
-    EstimatePZAlgoTask,
-    EstimatePZTask,
-    EstimatePZTaskConfig,
+import lsst.pex.config as pexConfig
+from lsst.meas.photoz.base import (
+    EstimatePhotozAlgoConfigBase,
+    EstimatePhotozAlgoTask,
+    EstimatePhotozTask,
+    EstimatePhotozTaskConfig,
+    photozAlgoRegistry,
 )
 
 
-class EstimatePZCMNNAlgoConfig(EstimatePZAlgoConfigBase):
-    """Config for EstimatePZCMNNAlgoTask
+class EstimatePhotozCMNNAlgoConfig(EstimatePhotozAlgoConfigBase):
+    """Config for EstimatePhotozCMNNAlgoTask
 
     This will select and configure the CMNNEstimator p(z)
     estimation algorithm
@@ -49,41 +51,42 @@ class EstimatePZCMNNAlgoConfig(EstimatePZAlgoConfigBase):
     def estimator_class(cls) -> type[CatEstimator]:
         return CMNNEstimator
 
+    @classmethod
+    def stage_name(cls):
+        return "cmnn"
 
-EstimatePZCMNNAlgoConfig._make_fields()
+
+EstimatePhotozCMNNAlgoConfig._make_fields()
 
 
-class EstimatePZCMNNAlgoTask(EstimatePZAlgoTask):
+@pexConfig.registerConfigurable(EstimatePhotozCMNNAlgoConfig.stage_name(), photozAlgoRegistry)
+class EstimatePhotozCMNNAlgoTask(EstimatePhotozAlgoTask):
     """SubTask that runs RAIL CMNN algorithm for p(z) estimation
 
-    See https://github.com/LSSTDESC/rail_cmnn/blob/main/src/rail/estimation/algos/cmnn.py  # noqa
+    See https://github.com/LSSTDESC/rail_cmnn/blob/main/src/rail/estimation/algos/cmnn.py
     for algorithm implementation.
 
     """
 
-    ConfigClass = EstimatePZCMNNAlgoConfig
+    ConfigClass = EstimatePhotozCMNNAlgoConfig
     _DefaultName = "estimatePZCMNNAlgo"
 
 
-class EstimatePZCMNNConfig(EstimatePZTaskConfig):
-    """Config for EstimatePZCMNNTask
+class EstimatePhotozCMNNConfig(EstimatePhotozTaskConfig):
+    """Config for EstimatePhotozCMNNTask
 
     Overrides setDefaults to use CMNN algorithm
     """
 
     def setDefaults(self) -> None:
-        self.pz_algo.retarget(EstimatePZCMNNAlgoTask)
-        self.pz_algo.stage_name = "cmnn"
-        self.pz_algo.output_mode = "return"
-        self.pz_algo.bands_to_convert = ["u", "g", "r", "i", "z", "y"]
-        self.pz_algo.bands = self.pz_algo.get_mag_name_list()
-        self.pz_algo.err_bands = self.pz_algo.get_mag_err_name_list()
-        self.pz_algo.mag_limits = self.pz_algo.get_mag_lim_dict()
-        self.pz_algo.band_a_env = self.pz_algo.get_band_a_env_dict()
+        super().setDefaults()
+        name = EstimatePhotozCMNNAlgoConfig.stage_name()
+        self.connections.algo = name
+        self.photoz_algo = name
 
 
-class EstimatePZCMNNTask(EstimatePZTask):
+class EstimatePhotozCMNNTask(EstimatePhotozTask):
     """Task that runs RAIL CMNN algorithm for p(z) estimation"""
 
-    ConfigClass = EstimatePZCMNNConfig
+    ConfigClass = EstimatePhotozCMNNConfig
     _DefaultName = "estimatePZCMNN"

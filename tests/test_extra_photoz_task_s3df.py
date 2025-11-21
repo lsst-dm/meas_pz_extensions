@@ -1,4 +1,4 @@
-# This file is part of meas_pz
+# This file is part of meas_photoz_algorithms
 #
 # Developed for the LSST Data Management System.
 # This product includes software developed by the LSST Project
@@ -24,7 +24,7 @@
 This will run the pipeline tasks against a dataset
 in /repo/dc2.
 
-This should include any algorithms that are wrapped in meas_pz.
+This should include any algorithms that are wrapped in meas_photoz.
 
 For now that is cmnn, gpz, dnf, fzboost, gpz, tpz, and lephare
 """
@@ -33,46 +33,46 @@ import os
 from typing import Any
 
 import pytest
+
 from lsst.daf.butler import Butler
-from lsst.meas.pz.estimate_pz_task import EstimatePZTask
-
-
-try:
-    from lsst.meas.pz.estimate_pz_task_bpz import EstimatePZBPZTask
-except ImportError:
-    EstimatePZBPZTask = None
+from lsst.meas.photoz.base import EstimatePhotozTask
 
 try:
-    from lsst.meas.pz.estimate_pz_task_cmnn import EstimatePZCMNNTask
+    from lsst.meas.photoz.base.estimate_photoz_task_bpz import EstimatePhotozBPZTask
 except ImportError:
-    EstimatePZCMNNTask = None
+    EstimatePhotozBPZTask = None
 
 try:
-    from lsst.meas.pz.estimate_pz_task_dnf import EstimatePZDNFTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_cmnn import EstimatePhotozCMNNTask
 except ImportError:
-    EstimatePZDNFTask = None
+    EstimatePhotozCMNNTask = None
 
 try:
-    from lsst.meas.pz.estimate_pz_task_fzboost import EstimatePZFZBoostTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_dnf import EstimatePhotozDNFTask
 except ImportError:
-    EstimatePZFZBoostTask = None
+    EstimatePhotozDNFTask = None
 
 try:
-    from lsst.meas.pz.estimate_pz_task_gpz import EstimatePZGPZTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_fzboost import EstimatePhotozFZBoostTask
 except ImportError:
-    EstimatePZGPZTask = None
+    EstimatePhotozFZBoostTask = None
 
 try:
-    from lsst.meas.pz.estimate_pz_task_lephare import EstimatePZLephareTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_gpz import EstimatePhotozGPZTask
 except ImportError:
-    EstimatePZLephareTask = None
+    EstimatePhotozGPZTask = None
 
 try:
-    from lsst.meas.pz.estimate_pz_task_tpz import EstimatePZTPZTask
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_lephare import EstimatePhotozLephareTask
 except ImportError:
-    EstimatePZTPZTask = None
+    EstimatePhotozLephareTask = None
 
-from lsst.meas.pz.extensions.tests.utils import run_pz_task_s3df
+try:
+    from lsst.meas.photoz.algorithms.estimate_photoz_task_tpz import EstimatePhotozTPZTask
+except ImportError:
+    EstimatePhotozTPZTask = None
+
+from lsst.meas.photoz.algorithms.tests.utils import run_pz_task_s3df
 
 TEST_DIR = os.path.abspath(os.path.dirname(__file__))
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
@@ -80,10 +80,10 @@ DAF_BUTLER_REPOSITORY_INDEX = os.environ.get("DAF_BUTLER_REPOSITORY_INDEX", None
 IS_S3DF = DAF_BUTLER_REPOSITORY_INDEX == "/sdf/group/rubin/shared/data-repos.yaml"
 
 
-def makeButler_repo_dc2(**kwargs: Any) -> Butler:
+def makeButler_repo_dp1(**kwargs: Any) -> Butler:
     butler = Butler.from_config(
-        "/repo/dc2",
-        collections=["2.2i/runs/test-med-1/w_2024_16/DM-43972"],
+        "/repo/dp1_prep",
+        collections=["LSSTComCam/runs/DRP/DP1/v29_0_0/DM-50260"],
         **kwargs,
     )
     return butler
@@ -92,34 +92,34 @@ def makeButler_repo_dc2(**kwargs: Any) -> Butler:
 @pytest.mark.parametrize(
     "algo_name,model_file,estimator_class",
     [
-        ("bpz", "models/dc2/model_inform_bpz_wrap.pickle", EstimatePZBPZTask),
+        ("bpz", "models/dc2/model_inform_bpz_wrap.pickle", EstimatePhotozBPZTask),
         # (
         #    "cmnn",
         #    "models/dc2/model_inform_cmnn_wrap.pickle",
-        #    EstimatePZCMNNTask
+        #    EstimatePhotozCMNNTask
         # ),
-        ("dnf", "models/dc2/model_inform_dnf_wrap.pickle", EstimatePZDNFTask),
+        ("dnf", "models/dc2/model_inform_dnf_wrap.pickle", EstimatePhotozDNFTask),
         (
             "fzboost",
             "models/dc2/model_inform_fzboost_wrap.pickle",
-            EstimatePZFZBoostTask,
+            EstimatePhotozFZBoostTask,
         ),
-        ("gpz", "models/dc2/model_inform_gpz_wrap.pickle", EstimatePZGPZTask),
+        ("gpz", "models/dc2/model_inform_gpz_wrap.pickle", EstimatePhotozGPZTask),
         # (
         #    "lephare",
         #    "models/dc2/model_inform_lephare_wrap.pickle",
-        #    EstimatePZLephareTask,
+        #    EstimatePhotozLephareTask,
         # ),
-        ("tpz", "models/dc2/model_inform_tpz_wrap.pickle", EstimatePZTPZTask),
+        ("tpz", "models/dc2/model_inform_tpz_wrap.pickle", EstimatePhotozTPZTask),
     ],
 )
 @pytest.mark.skipif(not IS_S3DF, reason="Not at S3DF")
 def test_pz_task_s3df(
     algo_name: str,
     model_file: str,
-    estimator_class: type[EstimatePZTask],
+    estimator_class: type[EstimatePhotozTask],
 ) -> None:
     if estimator_class is None:
         pytest.skip(f"Missing {algo_name} in env")
-    butler = makeButler_repo_dc2()
+    butler = makeButler_repo_dp1()
     run_pz_task_s3df(algo_name, butler, model_file, estimator_class)
