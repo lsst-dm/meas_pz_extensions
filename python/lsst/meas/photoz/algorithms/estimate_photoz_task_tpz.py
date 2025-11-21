@@ -26,12 +26,8 @@ __all__ = [
     "EstimatePhotozTPZTask",
 ]
 
-import rail.estimation.algos.tpz_lite as tpz_lite
 from rail.estimation.algos.tpz_lite import TPZliteEstimator
 from rail.estimation.estimator import CatEstimator
-
-from ceci.config import StageConfig as CeciStageConfig
-from ceci.config import StageParameter as CeciParam
 
 import lsst.pex.config as pexConfig
 from lsst.meas.photoz.base import (
@@ -59,76 +55,6 @@ class EstimatePhotozTPZAlgoConfig(EstimatePhotozAlgoConfigBase):
     @classmethod
     def stage_name(cls):
         return "tpz"
-
-    """
-    bands = pexConfig.ListField[str](
-        doc="Bands to fit. Must correspond to magnitude fields in bands_to_convert.",
-        default=["u", "g", "r", "i", "z", "y"],
-    )
-
-    ""
-    @property
-    def bands(self):
-        return tpz_lite.bands
-    
-    @bands.setter
-    def bands(self, bands):
-        self.bands_to_convert = bands
-
-    @classmethod
-    def _make_fields(cls) -> None:
-        ""Import the RAIL estimation stage.
-
-        This method loops through the stage config parameters and converts
-        RAIL/Ceci parameters to corresponding pex.config parameters.
-
-        It should be called exactly once, immediately after the definition
-        of every subclass of this base class.
-        ""
-        if hasattr(cls, "__fields_made__"):
-            if cls.__fields_made__ is not True:
-                raise RuntimeError(f"{cls.__fields_made__=} exists but is not True")
-            raise RuntimeError(f"{cls=} called _make_fields twice")
-        stage_class = cls.estimator_class()
-        for key, val in stage_class.config_options.items():
-            print(key, val)
-            if isinstance(val, CeciStageConfig):
-                val = val.get(key)
-            if isinstance(val, CeciParam):
-                if val.dtype in [bool, int, float, str]:
-                    if (attr := getattr(cls, key, None)) is not None:
-                        if not isinstance(attr, pexConfig.Field):
-                            raise RuntimeError(f"{cls=} {key=} exists but is of {type(key)=}, not Field")
-                        elif attr.dtype != val.dtype:
-                            raise RuntimeError(f"{cls=} {key=} exists but {attr.dtype=} != {val.dtype=}")
-                        attr.default = val.default
-                        attr.doc = f"{val.msg} (overriding base doc='{attr.doc}')"
-                    else:
-                        setattr(
-                            cls,
-                            key,
-                            pexConfig.Field(doc=val.msg, dtype=val.dtype, default=val.default),
-                        )
-                elif val.dtype in [list]:
-                    # this is a hack, but it works.
-                    if val.default:
-                        item_type = type(val.default[0])
-                    else:
-                        item_type = str
-                    setattr(
-                        cls,
-                        key,
-                        pexConfig.ListField(doc=val.msg, dtype=item_type, default=val.default),
-                    )
-                elif val.dtype in [dict]:
-                    setattr(
-                        cls,
-                        key,
-                        pexConfig.DictField(doc=val.msg, keytype=str, default=val.default),
-                    )
-            print(getattr(cls, key, None))
-        cls.__fields_made__ = True
-    """
 
     def _finalize(self):
         super()._finalize()
